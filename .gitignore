@@ -1,0 +1,13 @@
+build/
+DerivedData/
+*.xcuserstate
+xcuserdata/
+.DS_Store
+*.ipa
+*.xcarchive
+*.xcresult
+.env
+
+Tests/Fixture.json
+
+build-device/
