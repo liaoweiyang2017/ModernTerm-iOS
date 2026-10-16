@@ -42,3 +42,14 @@ Not verified: physical device installation, password authentication against a li
 - A physical-device receipt confirmed the authorized Mac-session migration and successful credential writes. Actual server details and secrets are not included in this repository or IPA.
 - Phone-side import file removed after success; Mac-side plaintext transfer file removed after receipt verification. Existing desktop configuration and credentials retained unchanged.
 - Physical device UI shows imported sessions. Remote logins to the user's servers were not performed as part of deployment.
+
+
+## 0.2.2 keyboard regression
+
+- Reproduced the original defect with a visible UIKit terminal that could become first responder but did not request focus; test failed before the fix.
+- The same test passes after deferring focus until window attachment. Added hide/reopen/detach checks to prevent stale keyboard requests and focus stealing on ordinary UI refreshes.
+- Exercised UIKit's `insertText` entry point through the actual terminal delegate and temporary SSH PTY; an escaped printf command produced the expected server output.
+- Full ephemeral SSH/SFTP regression: 16 tests passed. Release arm64 build passed.
+- Installed 0.2.2 into LiveContainer on iPhone 17, rebound its existing data container, and visually verified the original server list is retained.
+
+- Physical iPhone 17 / LiveContainer: user opened their SSH terminal; native iOS keyboard and the new keyboard button were visibly present, with the prompt above the keyboard. No commands were entered into that user server by the agent.

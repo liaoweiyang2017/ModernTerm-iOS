@@ -48,8 +48,8 @@ struct RemoteFile: Identifiable, Hashable {
   @Published var history: [MetricPoint] = []
   @Published var monitorError: String?
   @Published var monitoring = false
-  lazy var terminal: TerminalView = {
-    let view = TerminalView(frame: .zero)
+  lazy var terminal: TerminalInputView = {
+    let view = TerminalInputView(frame: .zero)
     view.font = .monospacedSystemFont(ofSize: 13, weight: .regular)
     return view
   }()

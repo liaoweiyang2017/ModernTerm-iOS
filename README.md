@@ -1,6 +1,6 @@
 # ModernTerm for iOS / iPadOS
 
-独立的原生 SwiftUI + UIKit SSH 客户端，沿用 Modernterm 的应用图标。AppKit 只适用于 macOS，因此移动端采用 UIKit 的 SwiftTerm 终端视图。当前版本 0.2.0，iOS / iPadOS 17+。
+独立的原生 SwiftUI + UIKit SSH 客户端，沿用 Modernterm 的应用图标。AppKit 只适用于 macOS，因此移动端采用 UIKit 的 SwiftTerm 终端视图。当前版本 0.2.2，iOS / iPadOS 17+。
 
 ## 功能
 
@@ -73,3 +73,10 @@ Debug 专用参数 `--monitor-preview` 可展示明确标注的模拟数据，�
 已提供一次性 USB 迁移入口：将受保护的 `ModernTerm-Mac-Import.json` 放入 ModernTerm 自己的数据容器 Documents，启动或回到前台时导入；也可在 Settings → Mac migration 中触发。文件结构为版本 1 的 `MacMigration`，只合并新 UUID，保留现有条目，密码/私钥写入 iOS Keychain。成功后删除输入文件并留下不含凭据的统计回执；失败保留输入文件，不宣称成功。不要把该迁移文件放入仓库、IPA 或云端。
 
 LiveContainer 部署使用正常 Release arm64 `.app` 的 `Payload` IPA；LiveContainer 自己完成签名及沙箱处理。已验证 iPhone 17 / iOS 27.2 / LiveContainer 3.8.10 可启动并完成 Keychain 凭据迁移。该部署不等同于 App Store 安装，不替代 LiveContainer/SideStore 的签名有效期维护。
+
+
+## 0.2.2 系统键盘修复
+
+终端加入 UIKit 窗口后再申请键盘焦点，切到 Terminal 自动唤起系统输入；右上角提供 Show keyboard，下方辅助按键栏提供收起按钮。监控刷新不会抢回已经收起的键盘，离开终端页时释放焦点。
+
+LiveContainer 更新时可能给替换应用创建新的空数据容器。更新前记录现有容器，更新后核对并重新选择原容器，不要删除原数据或重复导入。应用配置和 Keychain 的隔离标识都与容器有关。

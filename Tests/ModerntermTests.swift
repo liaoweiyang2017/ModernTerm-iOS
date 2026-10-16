@@ -1,3 +1,4 @@
+import SwiftUI
 import XCTest
 
 @testable import ModerntermIOS
@@ -156,6 +157,34 @@ import XCTest
     XCTAssertTrue(session.connected, session.error ?? session.status)
     XCTAssertNotNil(session.writer)
     guard session.connected, session.writer != nil else { return }
+    let scene = try XCTUnwrap(
+      UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first)
+    let previousWindow = scene.windows.first(where: { $0.isKeyWindow })
+    let keyboardWindow = UIWindow(windowScene: scene)
+    keyboardWindow.rootViewController = UIHostingController(
+      rootView: TerminalSurface(session: session))
+    keyboardWindow.makeKeyAndVisible()
+    defer {
+      session.terminal.hideKeyboard()
+      keyboardWindow.isHidden = true
+      previousWindow?.makeKey()
+    }
+    try await Task.sleep(nanoseconds: 100_000_000)
+    XCTAssertTrue(session.terminal.isFirstResponder)
+    // Drive UIKit's actual software-keyboard input entry point, not SSHSession.send.
+    session.terminal.insertText("printf '\\113\\105\\131\\137\\117\\113\\n'\n")
+    for _ in 0..<50 {
+      if String(decoding: session.terminal.getTerminal().getBufferAsData(), as: UTF8.self).contains(
+        "KEY_OK")
+      {
+        break
+      }
+      try await Task.sleep(nanoseconds: 100_000_000)
+    }
+    XCTAssertTrue(
+      String(decoding: session.terminal.getTerminal().getBufferAsData(), as: UTF8.self).contains(
+        "KEY_OK"))
+
     session.send(Data("printf 'IOS_PTY_OK\\n'\n".utf8))
     for _ in 0..<50 {
       if String(decoding: session.terminal.getTerminal().getBufferAsData(), as: UTF8.self).contains(

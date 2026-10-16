@@ -27,11 +27,12 @@ struct TerminalSurface: UIViewRepresentable {
   @AppStorage("palette") var palette = "modernterm"
   @Environment(\.colorScheme) private var colorScheme
   func makeCoordinator() -> Coordinator { Coordinator(session) }
-  func makeUIView(context: Context) -> TerminalView {
+  func makeUIView(context: Context) -> TerminalInputView {
     session.terminal.terminalDelegate = context.coordinator
+    session.terminal.showKeyboard(force: false)
     return session.terminal
   }
-  func updateUIView(_ view: TerminalView, context: Context) {
+  func updateUIView(_ view: TerminalInputView, context: Context) {
     let font = UIFont.monospacedSystemFont(ofSize: fontSize, weight: .regular)
     if view.font != font { view.font = font }
     let effectivePalette =
@@ -51,6 +52,9 @@ struct TerminalSurface: UIViewRepresentable {
       }
       context.coordinator.palette = effectivePalette
     }
+  }
+  static func dismantleUIView(_ view: TerminalInputView, coordinator: Coordinator) {
+    view.hideKeyboard()
   }
   @MainActor final class Coordinator: NSObject, @preconcurrency TerminalViewDelegate {
     let session: SSHSession
@@ -88,7 +92,7 @@ struct SessionScreen: View {
         if page == 0 {
           MonitoringScreen(session: session)
         } else if page == 1 {
-          TerminalSurface(session: session)
+          TerminalSurface(session: session).frame(maxWidth: .infinity, maxHeight: .infinity)
         } else {
           FilesScreen(session: session).task(id: session.connected) {
             if session.connected {
@@ -102,6 +106,9 @@ struct SessionScreen: View {
       if page == 1 {
         ScrollView(.horizontal, showsIndicators: false) {
           HStack {
+            Button("Hide keyboard", systemImage: "keyboard.chevron.compact.down") {
+              session.terminal.hideKeyboard()
+            }.labelStyle(.iconOnly).buttonStyle(.bordered)
             ForEach(
               [
                 ("Esc", "\u{1b}"), ("Tab", "\t"), ("Ctrl-C", "\u{3}"), ("Ctrl-D", "\u{4}"),
@@ -124,7 +131,11 @@ struct SessionScreen: View {
     .navigationTitle(session.server.name.isEmpty ? session.server.host : session.server.name)
     .navigationBarTitleDisplayMode(.inline)
     .toolbar {
-      ToolbarItem(placement: .topBarTrailing) {
+      ToolbarItemGroup(placement: .topBarTrailing) {
+        if page == 1 {
+          Button("Show keyboard", systemImage: "keyboard") { session.terminal.showKeyboard() }
+            .accessibilityIdentifier("showTerminalKeyboard")
+        }
         if session.connected {
           Button("Disconnect", systemImage: "stop.circle") { showDisconnect = true }
         } else {

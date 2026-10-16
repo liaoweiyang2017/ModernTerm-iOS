@@ -303,7 +303,7 @@ struct SettingsScreen: View {
           .font(.footnote).foregroundStyle(.secondary)
         }
         Section("About") {
-          LabeledContent("Version", value: "0.2.1")
+          LabeledContent("Version", value: "0.2.2")
           LabeledContent("Developer", value: "Weiyang Liao / 廖卫阳")
           Text("Native SwiftUI + UIKit · SwiftTerm · Citadel").font(.footnote)
           NavigationLink("What's new") {
