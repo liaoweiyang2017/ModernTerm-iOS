@@ -1,6 +1,6 @@
 # ModernTerm for iOS / iPadOS
 
-独立的原生 SwiftUI + UIKit SSH 客户端，沿用 Modernterm 的应用图标。AppKit 只适用于 macOS，因此移动端采用 UIKit 的 SwiftTerm 终端视图。首版 0.1.0，iOS / iPadOS 17+。
+独立的原生 SwiftUI + UIKit SSH 客户端，沿用 Modernterm 的应用图标。AppKit 只适用于 macOS，因此移动端采用 UIKit 的 SwiftTerm 终端视图。当前版本 0.2.0，iOS / iPadOS 17+。
 
 ## 功能
 
@@ -48,3 +48,22 @@ SwiftTerm 固定为 1.18.0；1.20.0 的构建信息插件在本机 Xcode 的 iOS
 代码只备份到私有 GitHub 项目；没有 GitHub Actions。生成目录、测试临时密钥和用户凭据不进入 Git。
 
 第三方依赖：SwiftTerm（MIT）、Citadel（MIT）、SwiftNIO/NIOSSH/Crypto（Apache 2.0）、终端配色及对应来源。详见 `Resources/ThirdParty.txt` 和 `Resources/PaletteProvenance.json`。应用自有代码暂保留所有权利，不提供公共开源许可。
+
+## 0.2.0 手机监控工作区
+
+连接后默认进入 Monitor，SSH 终端和 SFTP 通道仅在切换到对应页时建立。底部 Overview 汇总最多 8 个已打开连接；点击某台服务器查看详细数据。
+
+- CPU 总使用率、逻辑核心、型号、系统/内核/架构、负载与运行时间。
+- 内存（以 MemAvailable 计算）、交换区、可用时的温度传感器。
+- 本地文件系统容量、各磁盘/分区读写速度与 IOPS。
+- 各网络接口收发速度/累计流量、TCP in-use 和 TIME_WAIT；排除 lo、veth、docker 和 br-*，其他叠加接口可能重复，不能据此计费。
+- 可用时的 NVIDIA 利用率、显存、温度；只读取已有 nvidia-smi。
+- Docker 只读统计；需要用户现有权限，不执行 sudo、不更改组或启动/停止容器。
+- CPU 平均占用最高的 12 个进程，仅采集命令名，不采集命令参数；ps 显示的是进程生命周期平均值，不是采样间隔瞬时值。
+- 原生趋势图保留最近 60 个样本，仅存内存；5/10/30 秒间隔可选，后台断开，重新连接重新采样。
+
+通过 SSH 读取 Linux /proc 和 /sys，未在服务器安装程序。参考 [ServerCat 官方说明](https://servercat.app/en/faq) 的无代理采集方式，自行实现采集、计算与 SwiftUI 界面。非 Linux 仅显示平台信息，SSH/SFTP 仍可用。CPU/网络/I/O 首次采样、重启或计数回退不显示伪造速率。命令响应限制 256 KiB；有 timeout 时整次采集限制 9 秒，GPU/Docker 子命令各 3 秒。无 timeout 时不运行可选 GPU/Docker 命令；基础采集依赖服务器普通系统命令正常返回。
+
+监控数据不会上传到开发者、GitHub 或 iCloud。最多展示 512 个核心计数、32 个文件系统/容器和 256 条磁盘计数。
+
+Debug 专用参数 `--monitor-preview` 可展示明确标注的模拟数据，方便检查小屏布局；不读取凭据、不连接服务器、不保存会话，Release 构建不包含此预览。正式启动不传此参数。

@@ -44,26 +44,36 @@ struct RemoteFile: Identifiable, Hashable {
   @Published var files: [RemoteFile] = []
   @Published var busy = false
   @Published var transferProgress: Double = 0
-  @Published var metrics = ""
-  let terminal = TerminalView(frame: .zero)
+  @Published var snapshot: ServerSnapshot?
+  @Published var history: [MetricPoint] = []
+  @Published var monitorError: String?
+  @Published var monitoring = false
+  lazy var terminal: TerminalView = {
+    let view = TerminalView(frame: .zero)
+    view.font = .monospacedSystemFont(ofSize: 13, weight: .regular)
+    return view
+  }()
   var client: SSHClient?
   var sftp: SFTPClient?
   var writer: TTYStdinWriter?
   private var connectionTask: Task<Void, Never>?
   private var monitorTask: Task<Void, Never>?
+  private var shellTask: Task<Void, Never>?
   private var writeTask: Task<Void, Never>?
   private var generation = UUID()
   var cols = 80, rows = 24
   init(server: Server) {
     self.server = server
-    terminal.font = .monospacedSystemFont(ofSize: 13, weight: .regular)
   }
-  func connect(credentials: Credentials? = nil) {
-    guard connectionTask == nil else { return }
+  func connect(credentials: Credentials? = nil, startTerminal: Bool = false) {
+    guard connectionTask == nil, !connected else { return }
     let token = UUID()
     generation = token
     status = "Connecting…"
     error = nil
+    snapshot = nil
+    history = []
+    monitorError = nil
     connectionTask = Task {
       do {
         let creds = try credentials ?? Vault.read(server.id)
@@ -134,27 +144,15 @@ struct RemoteFile: Identifiable, Hashable {
         client = ssh
         connected = true
         status = "Connected"
-        do {
-          sftp = try await ssh.openSFTP()
-          try await refresh(".")
-        } catch { self.error = "SSH connected; SFTP unavailable: \(error.localizedDescription)" }
-        startMonitoring()
-        let request = SSHChannelRequestEvent.PseudoTerminalRequest(
-          wantReply: true, term: "xterm-256color", terminalCharacterWidth: cols,
-          terminalRowHeight: rows, terminalPixelWidth: 0, terminalPixelHeight: 0,
-          terminalModes: .init([:]))
-        try await ssh.withPTY(request) { input, output in
-          self.writer = output
-          for try await chunk in input {
-            try Task.checkCancellation()
-            guard self.generation == token else { break }
-            switch chunk {
-            case .stdout(let buffer), .stderr(let buffer):
-              self.terminal.feed(byteArray: Array(buffer.readableBytesView)[...])
-            }
+        ssh.onDisconnect { [weak currentSession] in
+          Task { @MainActor in
+            guard let self = currentSession, self.generation == token else { return }
+            await self.finish()
           }
         }
-        if generation == token { await finish() }
+        startMonitoring()
+        connectionTask = nil
+        if startTerminal { startShell() }
       } catch {
         if generation == token {
           self.error = error.localizedDescription
@@ -171,6 +169,9 @@ struct RemoteFile: Identifiable, Hashable {
     connectionTask = nil
     monitorTask?.cancel()
     monitorTask = nil
+    shellTask?.cancel()
+    shellTask = nil
+    monitoring = false
     writeTask?.cancel()
     writeTask = nil
     let old = client
@@ -184,6 +185,9 @@ struct RemoteFile: Identifiable, Hashable {
   private func finish() async {
     monitorTask?.cancel()
     monitorTask = nil
+    shellTask?.cancel()
+    shellTask = nil
+    monitoring = false
     writer = nil
     sftp = nil
     connected = false
@@ -213,6 +217,7 @@ struct RemoteFile: Identifiable, Hashable {
     }
   }
   func refresh(_ directory: String? = nil) async throws {
+    if sftp == nil, let client, connected { sftp = try await client.openSFTP() }
     guard let sftp else { throw AppError.message("SFTP is not connected.") }
     let target = try await sftp.getRealPath(atPath: directory ?? path)
     let listing = try await sftp.listDirectory(atPath: target)
@@ -322,16 +327,77 @@ struct RemoteFile: Identifiable, Hashable {
     }
     try await refresh()
   }
+  func startShell() {
+    guard connected, let client, shellTask == nil else { return }
+    let token = generation
+    shellTask = Task {
+      defer {
+        if generation == token {
+          writer = nil
+          shellTask = nil
+        }
+      }
+      do {
+        let request = SSHChannelRequestEvent.PseudoTerminalRequest(
+          wantReply: true, term: "xterm-256color", terminalCharacterWidth: cols,
+          terminalRowHeight: rows, terminalPixelWidth: 0, terminalPixelHeight: 0,
+          terminalModes: .init([:]))
+        try await client.withPTY(request) { input, output in
+          self.writer = output
+          for try await chunk in input {
+            try Task.checkCancellation()
+            guard self.generation == token else { break }
+            switch chunk {
+            case .stdout(let buffer), .stderr(let buffer):
+              self.terminal.feed(byteArray: Array(buffer.readableBytesView)[...])
+            }
+          }
+        }
+      } catch {
+        if generation == token, !Task.isCancelled { self.error = error.localizedDescription }
+      }
+    }
+  }
+  func prepareFiles() async throws {
+    guard connected, let client else { throw AppError.message("SSH is not connected.") }
+    if sftp == nil { sftp = try await client.openSFTP() }
+    try await refresh()
+  }
+  func refreshMonitoring() async {
+    guard connected, let client, !monitoring else { return }
+    let token = generation
+    monitoring = true
+    defer { if generation == token { monitoring = false } }
+    do {
+      let output = try await client.executeCommand(
+        MetricsCollector.command, maxResponseSize: 262144)
+      guard connected, generation == token, !Task.isCancelled else { return }
+      let value = MetricsParser.parse(String(buffer: output), previous: snapshot)
+      guard !value.host.isEmpty else {
+        throw AppError.message("Server returned incomplete monitoring data.")
+      }
+      if let before = snapshot?.uptime, let now = value.uptime, now < before { history.removeAll() }
+      snapshot = value
+      monitorError = nil
+      if value.supported {
+        history.append(
+          MetricPoint(
+            date: value.date, cpu: value.cpuPercent,
+            memory: value.memoryPercent, receive: value.receiveRate, send: value.sendRate))
+        if history.count > 60 { history.removeFirst(history.count - 60) }
+      }
+    } catch {
+      if generation == token, !Task.isCancelled { monitorError = error.localizedDescription }
+    }
+  }
   private func startMonitoring() {
+    monitorTask?.cancel()
     monitorTask = Task {
-      while !Task.isCancelled, let client, connected {
-        do {
-          let output = try await client.executeCommand(
-            "hostname; uptime; free -m 2>/dev/null | head -2; df -h / | tail -1",
-            maxResponseSize: 16384)
-          metrics = String(buffer: output)
-        } catch { metrics = "Monitoring unavailable" }
-        try? await Task.sleep(nanoseconds: 15_000_000_000)
+      while !Task.isCancelled, connected {
+        await refreshMonitoring()
+        let preference = UserDefaults.standard.integer(forKey: "monitorInterval")
+        let interval = [5, 10, 30].contains(preference) ? preference : 10
+        do { try await Task.sleep(nanoseconds: UInt64(interval) * 1_000_000_000) } catch { break }
       }
     }
   }

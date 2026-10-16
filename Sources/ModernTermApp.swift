@@ -7,7 +7,17 @@ import SwiftUI
   @AppStorage("appearance") private var appearance = "system"
   var body: some Scene {
     WindowGroup {
-      RootScreen().environmentObject(store).environmentObject(workspace).preferredColorScheme(
+      Group {
+        #if DEBUG
+          if ProcessInfo.processInfo.arguments.contains("--monitor-preview") {
+            MonitoringPreview()
+          } else {
+            RootScreen()
+          }
+        #else
+          RootScreen()
+        #endif
+      }.environmentObject(store).environmentObject(workspace).preferredColorScheme(
         appearance == "dark" ? .dark : appearance == "light" ? .light : nil
       )
       .onChange(of: phase) { _, value in if value == .background { workspace.disconnectAll() } }
@@ -42,6 +52,7 @@ struct RootScreen: View {
   @State private var compactColumn: NavigationSplitViewColumn = .sidebar
   @State private var editing: Server?
   @State private var query = ""
+  @State private var overview = false
   @State private var settings = false
   @State private var macros = false
   @State private var deleteServer: Server?
@@ -60,7 +71,7 @@ struct RootScreen: View {
         if !workspace.sessions.isEmpty {
           Section("Open sessions") {
             ForEach(workspace.sessions) { session in
-              Label(session.server.name, systemImage: "terminal").tag(session.id)
+              MonitoringSessionRow(session: session).tag(session.id)
                 .contextMenu {
                   Button("Close session", role: .destructive) { workspace.close(session) }
                 }
@@ -110,6 +121,8 @@ struct RootScreen: View {
         ToolbarItemGroup(placement: .bottomBar) {
           Button("Settings", systemImage: "gearshape") { settings = true }
           Spacer()
+          Button("Overview", systemImage: "chart.xyaxis.line") { overview = true }
+          Spacer()
           Button("Macros", systemImage: "curlybraces") { macros = true }
         }
       }
@@ -124,6 +137,15 @@ struct RootScreen: View {
     }
     .onChange(of: workspace.selected) { _, value in if value != nil { compactColumn = .detail } }
     .sheet(item: $editing) { server in ServerEditor(server: server) }
+    .sheet(isPresented: $overview) {
+      NavigationStack {
+        MonitoringOverview { server in
+          workspace.open(server)
+          overview = false
+        }
+        .toolbar { Button("Done") { overview = false } }
+      }
+    }
     .sheet(isPresented: $settings) { SettingsScreen() }
     .sheet(isPresented: $macros) {
       MacrosScreen(session: workspace.sessions.first(where: { $0.id == workspace.selected }))
@@ -234,6 +256,7 @@ struct SettingsScreen: View {
   @AppStorage("appearance") private var appearance = "system"
   @AppStorage("fontSize") private var fontSize = 13.0
   @AppStorage("palette") private var palette = "modernterm"
+  @AppStorage("monitorInterval") private var monitorInterval = 10
   @AppStorage("followDirectory") private var follow = false
   var body: some View {
     NavigationStack {
@@ -250,6 +273,16 @@ struct SettingsScreen: View {
           Slider(value: $fontSize, in: 10...24, step: 1) { Text("Font size") }
           Text("SF Mono · \(Int(fontSize)) pt")
         }
+        Section("Monitoring") {
+          Picker("Refresh interval", selection: $monitorInterval) {
+            Text("5 seconds").tag(5)
+            Text("10 seconds").tag(10)
+            Text("30 seconds").tag(30)
+          }
+          Text(
+            "Linux metrics are read over SSH without sudo or agents. GPU requires nvidia-smi; containers require Docker access. History contains the last 60 samples and is not synced or uploaded."
+          ).font(.footnote).foregroundStyle(.secondary)
+        }
         Section("Connection") {
           Toggle("SFTP follows directory reports", isOn: $follow)
           Text(
@@ -257,13 +290,13 @@ struct SettingsScreen: View {
           ).font(.footnote).foregroundStyle(.secondary)
         }
         Section("About") {
-          LabeledContent("Version", value: "0.1.0")
+          LabeledContent("Version", value: "0.2.0")
           LabeledContent("Developer", value: "Weiyang Liao / 廖卫阳")
           Text("Native SwiftUI + UIKit · SwiftTerm · Citadel").font(.footnote)
           NavigationLink("What's new") {
             ScrollView {
               Text(
-                "0.1.0\n\nSSH sessions, saved passwords and private keys, host fingerprint verification, native terminal with Tab/control keys, SFTP upload/download and multi-delete, remote UTF-8 editing with conflict checks, Linux server information, terminal palettes and macros.\n\niOS local shell, persistent background connections, SSH tunnels, and automatic session recovery are not included in this initial mobile release."
+                "0.2.0\n\nMonitoring-first workspace, live CPU/core, memory/swap, disk/IO, network/TCP, uptime/load, NVIDIA GPU, Docker and process panels; recent trends and multi-server overview.\n\n0.1.0\n\nSSH sessions, saved passwords and private keys, host fingerprint verification, native terminal with Tab/control keys, SFTP upload/download and multi-delete, remote UTF-8 editing with conflict checks, Linux server information, terminal palettes and macros.\n\niOS local shell, persistent background connections, SSH tunnels, and automatic session recovery are not included in this initial mobile release."
               ).padding()
             }.navigationTitle("Changelog")
           }

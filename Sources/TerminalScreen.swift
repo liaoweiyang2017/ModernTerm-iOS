@@ -76,19 +76,30 @@ struct TerminalSurface: UIViewRepresentable {
 struct SessionScreen: View {
   @ObservedObject var session: SSHSession
   @State private var page = 0
-  @State private var showMonitor = false
   @State private var showDisconnect = false
   var body: some View {
     VStack(spacing: 0) {
       Picker("Workspace", selection: $page) {
-        Text("Terminal").tag(0)
-        Text("SFTP").tag(1)
+        Text("Monitor").tag(0)
+        Text("Terminal").tag(1)
+        Text("SFTP").tag(2)
       }.pickerStyle(.segmented).padding(.horizontal).padding(.bottom, 8)
-      ZStack {
-        TerminalSurface(session: session).opacity(page == 0 ? 1 : 0).allowsHitTesting(page == 0)
-        if page == 1 { FilesScreen(session: session) }
+      Group {
+        if page == 0 {
+          MonitoringScreen(session: session)
+        } else if page == 1 {
+          TerminalSurface(session: session)
+        } else {
+          FilesScreen(session: session).task(id: session.connected) {
+            if session.connected {
+              do { try await session.prepareFiles() } catch {
+                session.error = error.localizedDescription
+              }
+            }
+          }
+        }
       }
-      if page == 0 {
+      if page == 1 {
         ScrollView(.horizontal, showsIndicators: false) {
           HStack {
             ForEach(
@@ -107,7 +118,7 @@ struct SessionScreen: View {
         Circle().fill(session.connected ? .green : .red).frame(width: 7, height: 7)
         Text(session.status).font(.caption)
         Spacer()
-        Button("Server info", systemImage: "cpu") { showMonitor = true }.font(.caption)
+        Button("Monitor", systemImage: "cpu") { page = 0 }.font(.caption)
       }.padding(.horizontal).padding(.vertical, 7)
     }
     .navigationTitle(session.server.name.isEmpty ? session.server.host : session.server.name)
@@ -124,17 +135,8 @@ struct SessionScreen: View {
     .confirmationDialog("Disconnect this session?", isPresented: $showDisconnect) {
       Button("Disconnect", role: .destructive) { session.disconnect() }
     }
-    .sheet(isPresented: $showMonitor) {
-      NavigationStack {
-        ScrollView {
-          Text(
-            session.metrics.isEmpty ? "Connect to see Linux server information." : session.metrics
-          ).font(.system(.body, design: .monospaced)).frame(
-            maxWidth: .infinity, alignment: .leading
-          ).padding()
-        }.navigationTitle("Server information").toolbar { Button("Done") { showMonitor = false } }
-      }.presentationDetents([.medium, .large])
-    }
+    .onChange(of: page) { _, value in if value == 1 { session.startShell() } }
+    .onChange(of: session.connected) { _, value in if value && page == 1 { session.startShell() } }
     .alert(
       "Connection",
       isPresented: Binding(get: { session.error != nil }, set: { if !$0 { session.error = nil } })

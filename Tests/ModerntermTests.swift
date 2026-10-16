@@ -74,6 +74,50 @@ import XCTest
       session.error?.contains("changed") == true, session.error ?? "Missing host-key rejection")
     XCTAssertNil(session.trust)
   }
+  func testMonitoringConnectionDoesNotOpenShellOrSFTP() async throws {
+    struct Fixture: Decodable {
+      let port: Int
+      let user: String
+      let key: String
+      let hostKey: String
+    }
+    guard let url = Bundle(for: Self.self).url(forResource: "Fixture", withExtension: "json") else {
+      throw XCTSkip("Run Scripts/integration.py")
+    }
+    let fixture = try JSONDecoder().decode(Fixture.self, from: Data(contentsOf: url))
+    var server = Server()
+    server.host = "127.0.0.1"
+    server.port = fixture.port
+    server.user = fixture.user
+    server.keyLogin = true
+    let key = "hostkey." + server.endpoint
+    let previous = UserDefaults.standard.object(forKey: key)
+    UserDefaults.standard.set(fixture.hostKey, forKey: key)
+    defer {
+      if let previous {
+        UserDefaults.standard.set(previous, forKey: key)
+      } else {
+        UserDefaults.standard.removeObject(forKey: key)
+      }
+    }
+    let session = SSHSession(server: server)
+    defer { session.disconnect() }
+    session.connect(credentials: Credentials(privateKey: fixture.key))
+    for _ in 0..<100 {
+      if session.snapshot != nil { break }
+      try await Task.sleep(nanoseconds: 100_000_000)
+    }
+    XCTAssertTrue(session.connected, session.error ?? "Not connected")
+    XCTAssertNotNil(session.snapshot, session.monitorError ?? "Missing snapshot")
+    XCTAssertNil(session.writer)
+    XCTAssertNil(session.sftp)
+    // The fixture runs on macOS: platform metadata is valid, Linux metrics must remain unavailable.
+    XCTAssertFalse(session.snapshot?.supported ?? true)
+    XCTAssertNil(session.snapshot?.cpuPercent)
+    session.disconnect()
+    XCTAssertFalse(session.connected)
+    XCTAssertFalse(session.monitoring)
+  }
   func testSSHAndSFTPRoundtrip() async throws {
     struct Fixture: Decodable {
       let port: Int
@@ -104,7 +148,7 @@ import XCTest
     }
     let session = SSHSession(server: server)
     defer { session.disconnect() }
-    session.connect(credentials: Credentials(privateKey: f.key))
+    session.connect(credentials: Credentials(privateKey: f.key), startTerminal: true)
     for _ in 0..<200 {
       if session.writer != nil { break }
       try await Task.sleep(nanoseconds: 100_000_000)
