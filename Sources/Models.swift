@@ -70,6 +70,7 @@ enum Vault {
 @MainActor final class ServerStore: ObservableObject {
   @Published var servers: [Server] = []
   @Published var error: String?
+  @Published var migrationMessage: String?
   private let file: URL
   init(file: URL? = nil) {
     self.file = file ?? URL.applicationSupportDirectory.appendingPathComponent("servers.json")
@@ -101,6 +102,61 @@ enum Vault {
     try persist(next)
     servers = next
     Vault.delete(server.id)
+  }
+  func importMigration(_ migration: MacMigration) throws -> MigrationReceipt {
+    guard error == nil else {
+      throw AppError.message("Repair the existing session file before importing.")
+    }
+    let existing = Set(servers.map(\.id))
+    let additions = migration.sessions.filter { !existing.contains($0.server.id) }
+    guard servers.count + additions.count <= 200 else {
+      throw AppError.message("Too many saved servers.")
+    }
+    var written: [(UUID, Credentials)] = []
+    do {
+      for entry in additions {
+        let previous = try Vault.read(entry.server.id)
+        try Vault.save(entry.credentials, id: entry.server.id)
+        written.append((entry.server.id, previous))
+      }
+      let next = servers + additions.map(\.server)
+      try persist(next)
+      servers = next
+    } catch {
+      for (id, previous) in written { try? Vault.save(previous, id: id) }
+      throw error
+    }
+    return MigrationReceipt(
+      imported: additions.count, skipped: migration.sessions.count - additions.count,
+      passwords: additions.filter { !$0.credentials.password.isEmpty }.count,
+      keys: additions.filter { !$0.credentials.privateKey.isEmpty }.count, date: Date())
+  }
+  func importPendingMigration(directory: URL = .documentsDirectory) {
+    let incoming = directory.appendingPathComponent(MacMigration.inboxName)
+    guard FileManager.default.fileExists(atPath: incoming.path) else { return }
+    do {
+      let attributes = try incoming.resourceValues(forKeys: [.fileSizeKey])
+      guard (attributes.fileSize ?? 0) <= 4 * 1024 * 1024 else {
+        throw AppError.message("Migration file exceeds 4 MiB.")
+      }
+      var privateInbox = incoming
+      var resourceValues = URLResourceValues()
+      resourceValues.isExcludedFromBackup = true
+      try privateInbox.setResourceValues(resourceValues)
+      try FileManager.default.setAttributes(
+        [.protectionKey: FileProtectionType.complete], ofItemAtPath: incoming.path)
+      let migration = try MacMigration.decode(Data(contentsOf: incoming))
+      let receipt = try importMigration(migration)
+      try JSONEncoder().encode(receipt).write(
+        to: directory.appendingPathComponent(MacMigration.receiptName),
+        options: [.atomic, .completeFileProtection])
+      try FileManager.default.removeItem(at: incoming)
+      migrationMessage =
+        "Imported \(receipt.imported) servers, \(receipt.passwords) passwords and \(receipt.keys) keys. \(receipt.skipped) existing entries were preserved. The temporary import file was removed."
+    } catch {
+      migrationMessage =
+        "Import failed; the private inbox file was preserved: \(error.localizedDescription)"
+    }
   }
   private func persist(_ values: [Server]) throws {
     guard error == nil else {

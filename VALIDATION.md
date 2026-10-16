@@ -34,3 +34,11 @@ Date: 2026-10-16 (Europe/Copenhagen)
 - No real user server, desktop credential store or iCloud files accessed.
 
 Not verified: physical device installation, password authentication against a live server, encrypted RSA private keys on a real device, long-duration/large transfer stress, App Store distribution. Dependencies provide password and key authentication; the network integration test specifically covers unencrypted Ed25519.
+
+## 0.2.1 deployment and migration
+
+- 14 simulator tests passed, including merge-without-overwrite, idempotence, invalid-version/duplicate rejection, successful inbox removal and failure retention.
+- Release arm64 IPA created without user credentials. Installed and launched in LiveContainer 3.8.10 on a physical iPhone 17 running iOS 27.2.
+- A physical-device receipt confirmed the authorized Mac-session migration and successful credential writes. Actual server details and secrets are not included in this repository or IPA.
+- Phone-side import file removed after success; Mac-side plaintext transfer file removed after receipt verification. Existing desktop configuration and credentials retained unchanged.
+- Physical device UI shows imported sessions. Remote logins to the user's servers were not performed as part of deployment.

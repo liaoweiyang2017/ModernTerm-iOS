@@ -67,3 +67,9 @@ SwiftTerm 固定为 1.18.0；1.20.0 的构建信息插件在本机 Xcode 的 iOS
 监控数据不会上传到开发者、GitHub 或 iCloud。最多展示 512 个核心计数、32 个文件系统/容器和 256 条磁盘计数。
 
 Debug 专用参数 `--monitor-preview` 可展示明确标注的模拟数据，方便检查小屏布局；不读取凭据、不连接服务器、不保存会话，Release 构建不包含此预览。正式启动不传此参数。
+
+## 0.2.1 LiveContainer 与 Mac 会话迁移
+
+已提供一次性 USB 迁移入口：将受保护的 `ModernTerm-Mac-Import.json` 放入 ModernTerm 自己的数据容器 Documents，启动或回到前台时导入；也可在 Settings → Mac migration 中触发。文件结构为版本 1 的 `MacMigration`，只合并新 UUID，保留现有条目，密码/私钥写入 iOS Keychain。成功后删除输入文件并留下不含凭据的统计回执；失败保留输入文件，不宣称成功。不要把该迁移文件放入仓库、IPA 或云端。
+
+LiveContainer 部署使用正常 Release arm64 `.app` 的 `Payload` IPA；LiveContainer 自己完成签名及沙箱处理。已验证 iPhone 17 / iOS 27.2 / LiveContainer 3.8.10 可启动并完成 Keychain 凭据迁移。该部署不等同于 App Store 安装，不替代 LiveContainer/SideStore 的签名有效期维护。

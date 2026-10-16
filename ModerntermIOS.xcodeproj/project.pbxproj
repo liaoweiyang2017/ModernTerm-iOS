@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		09EB4949BF3B5D698B027307 /* ModernTermApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = EAD6FEC9CA519470FED0F73C /* ModernTermApp.swift */; };
 		1BAAA1D6F52DA3912ACC0DE7 /* MonitoringScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5458393C9391D7520034F255 /* MonitoringScreen.swift */; };
+		2316772C609E4BC50327DCAB /* MigrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45B1B37CD381E478447ACB93 /* MigrationTests.swift */; };
 		5CE69A108F29219DC7A96520 /* NIOSSH in Frameworks */ = {isa = PBXBuildFile; productRef = A55E2AE9983C9B3711F15F97 /* NIOSSH */; };
 		60BF2766954F08C4C9F097EB /* TerminalScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 977F66D406FC566745E48B81 /* TerminalScreen.swift */; };
 		64FD150C98D8E6344D37EE66 /* NIOCore in Frameworks */ = {isa = PBXBuildFile; productRef = 73E765D601092E4680A19039 /* NIOCore */; };
@@ -21,6 +22,7 @@
 		852EE47FE3390DB47041DBFE /* SSHSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB8A547CC551054CA2DF954B /* SSHSession.swift */; };
 		99CF70CD1926658799A10386 /* Citadel in Frameworks */ = {isa = PBXBuildFile; productRef = 826B073E2F09B2438979319D /* Citadel */; };
 		9ADD776A38EFFB6AC076B4CE /* ThirdParty.txt in Resources */ = {isa = PBXBuildFile; fileRef = EF35C3A2A322754645300671 /* ThirdParty.txt */; };
+		A4242B72F0B557337A29F29D /* MacMigration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7244E171FD6252D27AD1F441 /* MacMigration.swift */; };
 		B45BA7216E30CF7DDA90FD03 /* Crypto in Frameworks */ = {isa = PBXBuildFile; productRef = 7641CA59251BCC565C02EEB2 /* Crypto */; };
 		D7F3A13EFB110AC4ECB54839 /* MetricsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8BB3E65C9F6C90CE8A02B91 /* MetricsTests.swift */; };
 		D82A00DA6498A9A6E4230E3B /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 755C0BBA801DD62F8EA11710 /* Models.swift */; };
@@ -41,8 +43,10 @@
 /* Begin PBXFileReference section */
 		151365A6BFD606AB5CA2F601 /* ModernTerm.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ModernTerm.entitlements; sourceTree = "<group>"; };
 		1C7D5395F96BCD117BD3F337 /* ServerMetrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerMetrics.swift; sourceTree = "<group>"; };
+		45B1B37CD381E478447ACB93 /* MigrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MigrationTests.swift; sourceTree = "<group>"; };
 		5458393C9391D7520034F255 /* MonitoringScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonitoringScreen.swift; sourceTree = "<group>"; };
 		5F808DB76DE1E2B4B7792907 /* FilesScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilesScreen.swift; sourceTree = "<group>"; };
+		7244E171FD6252D27AD1F441 /* MacMigration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacMigration.swift; sourceTree = "<group>"; };
 		755C0BBA801DD62F8EA11710 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
 		85C8E842DEE2BFA311753B1B /* MonitoringPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonitoringPreview.swift; sourceTree = "<group>"; };
 		917CB8537099E4CB223C198F /* ModerntermIOS.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = ModerntermIOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -88,6 +92,7 @@
 			isa = PBXGroup;
 			children = (
 				5F808DB76DE1E2B4B7792907 /* FilesScreen.swift */,
+				7244E171FD6252D27AD1F441 /* MacMigration.swift */,
 				755C0BBA801DD62F8EA11710 /* Models.swift */,
 				151365A6BFD606AB5CA2F601 /* ModernTerm.entitlements */,
 				EAD6FEC9CA519470FED0F73C /* ModernTermApp.swift */,
@@ -113,6 +118,7 @@
 			isa = PBXGroup;
 			children = (
 				F8BB3E65C9F6C90CE8A02B91 /* MetricsTests.swift */,
+				45B1B37CD381E478447ACB93 /* MigrationTests.swift */,
 				B4A1F4C5129B7F5D35386AF0 /* ModerntermTests.swift */,
 			);
 			path = Tests;
@@ -238,6 +244,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D7F3A13EFB110AC4ECB54839 /* MetricsTests.swift in Sources */,
+				2316772C609E4BC50327DCAB /* MigrationTests.swift in Sources */,
 				F874D9D19D7C3F99D0392CA5 /* ModerntermTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -247,6 +254,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				6BDE11F4C7C655B8F9D24F18 /* FilesScreen.swift in Sources */,
+				A4242B72F0B557337A29F29D /* MacMigration.swift in Sources */,
 				D82A00DA6498A9A6E4230E3B /* Models.swift in Sources */,
 				09EB4949BF3B5D698B027307 /* ModernTermApp.swift in Sources */,
 				67C6C7A34E71B72BCEDC338A /* MonitoringPreview.swift in Sources */,
@@ -325,7 +333,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
@@ -345,7 +353,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				MARKETING_VERSION = 0.2.0;
+				MARKETING_VERSION = 0.2.1;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -408,7 +416,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -422,7 +430,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				MARKETING_VERSION = 0.2.0;
+				MARKETING_VERSION = 0.2.1;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";

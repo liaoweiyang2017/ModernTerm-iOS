@@ -20,7 +20,10 @@ import SwiftUI
       }.environmentObject(store).environmentObject(workspace).preferredColorScheme(
         appearance == "dark" ? .dark : appearance == "light" ? .light : nil
       )
-      .onChange(of: phase) { _, value in if value == .background { workspace.disconnectAll() } }
+      .onChange(of: phase) { _, value in
+        if value == .background { workspace.disconnectAll() }
+        if value == .active { store.importPendingMigration() }
+      }
     }
   }
 }
@@ -136,6 +139,7 @@ struct RootScreen: View {
       }
     }
     .onChange(of: workspace.selected) { _, value in if value != nil { compactColumn = .detail } }
+    .task { store.importPendingMigration() }
     .sheet(item: $editing) { server in ServerEditor(server: server) }
     .sheet(isPresented: $overview) {
       NavigationStack {
@@ -252,6 +256,7 @@ struct ServerEditor: View {
   }
 }
 struct SettingsScreen: View {
+  @EnvironmentObject private var store: ServerStore
   @Environment(\.dismiss) private var dismiss
   @AppStorage("appearance") private var appearance = "system"
   @AppStorage("fontSize") private var fontSize = 13.0
@@ -289,8 +294,16 @@ struct SettingsScreen: View {
             "Directory following requires your remote shell to emit OSC 7. iOS suspends applications in the background, so ModernTerm disconnects when backgrounded; reconnect from the session toolbar when you return."
           ).font(.footnote).foregroundStyle(.secondary)
         }
+        Section("Mac migration") {
+          Button("Import Mac sessions") { store.importPendingMigration() }
+          Text(
+            store.migrationMessage
+              ?? "A private USB migration file can be placed in this app's Documents folder. Existing sessions are preserved; credentials are stored in the iOS Keychain."
+          )
+          .font(.footnote).foregroundStyle(.secondary)
+        }
         Section("About") {
-          LabeledContent("Version", value: "0.2.0")
+          LabeledContent("Version", value: "0.2.1")
           LabeledContent("Developer", value: "Weiyang Liao / 廖卫阳")
           Text("Native SwiftUI + UIKit · SwiftTerm · Citadel").font(.footnote)
           NavigationLink("What's new") {
