@@ -12,6 +12,7 @@ Date: 2026-10-16 (Europe/Copenhagen)
   - iOS Keychain create/read/update/delete using a disposable test account.
   - Real localhost SSH Ed25519 authentication, PTY input/output, SFTP upload/download byte comparison, UTF-8 remote edit/save, conflict rejection and deletion.
   - Changed host key rejection before authentication, with no trust override prompt.
+- Native iPad Pro 13-inch / iPadOS 27.0 simulator: sidebar and detail layout visually verified; simulator app installed.
 - Native iPhone UI inspected through Xcode Device Hub: application name, home layout, add-server entry, Settings, palette/font/background policy controls.
 - Temporary test SSH server, private keys and fixture source removed after testing. Test bundle removed from delivered simulator app.
 - No real user server, desktop credential store or iCloud files accessed.
