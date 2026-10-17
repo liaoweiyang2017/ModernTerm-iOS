@@ -18,6 +18,27 @@ import org.junit.Test
 class TermTransferUiTest {
     @get:Rule val compose = createAndroidComposeRule<MainActivity>()
 
+    private fun capturePreview() {
+        val instrument = InstrumentationRegistry.getInstrumentation()
+        val resolver = instrument.targetContext.contentResolver
+        val values =
+            android.content.ContentValues().apply {
+                put(android.provider.MediaStore.Images.Media.DISPLAY_NAME, "term-preview.png")
+                put(android.provider.MediaStore.Images.Media.MIME_TYPE, "image/png")
+                put(
+                    android.provider.MediaStore.Images.Media.RELATIVE_PATH,
+                    "Pictures/ModernTerm-tests",
+                )
+            }
+        val uri =
+            resolver.insert(android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values)!!
+        instrument.uiAutomation.takeScreenshot()?.let { screenshot ->
+            resolver.openOutputStream(uri)!!.use {
+                screenshot.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it)
+            }
+        }
+    }
+
     @Test
     fun batchImportPreviewAndEncryptedConfigurationExport() {
         val instrument = InstrumentationRegistry.getInstrumentation()
@@ -70,6 +91,8 @@ class TermTransferUiTest {
             compose.waitUntil(10000) {
                 compose.onAllNodesWithText("Import preview").fetchSemanticsNodes().isNotEmpty()
             }
+            compose.onNodeWithText("Unlock file 3 of 0").assertDoesNotExist()
+            capturePreview()
             compose.onNodeWithText("Import 2 connections").performScrollTo().performClick()
             compose.waitUntil(5000) {
                 compose.activity.workspace.servers.any { it.id == entries[0].server.id }

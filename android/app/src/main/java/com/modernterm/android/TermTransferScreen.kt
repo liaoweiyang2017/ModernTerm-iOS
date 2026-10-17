@@ -147,6 +147,8 @@ fun TermTransferScreen(vm: Workspace, dismiss: () -> Unit) {
                     }
                 }
         }
+    val stage =
+        if (files.isNotEmpty()) "unlock" else if (groups.isNotEmpty()) "preview" else "export"
     Dialog(
         onDismissRequest = { if (!critical) dismiss() },
         properties = DialogProperties(usePlatformDefaultWidth = false),
@@ -163,277 +165,284 @@ fun TermTransferScreen(vm: Workspace, dismiss: () -> Unit) {
                 )
             }
         ) { padding ->
-            LazyColumn(
-                state = listState,
-                modifier =
-                    Modifier.fillMaxSize()
-                        .padding(padding)
-                        .imePadding()
-                        .padding(horizontal = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                contentPadding = PaddingValues(bottom = 24.dp),
-            ) {
-                if (files.isEmpty() && groups.isEmpty()) {
-                    item {
-                        Text(
-                            "Export saved SSH connections",
-                            style = MaterialTheme.typography.titleLarge,
-                        )
-                    }
-                    item {
-                        TextButton(
-                            onClick = {
-                                selected =
-                                    if (selected.size == vm.servers.size) emptySet()
-                                    else vm.servers.map { it.id }.toSet()
-                            },
-                            enabled = !busy,
-                        ) {
+            key(stage) {
+                LazyColumn(
+                    state = listState,
+                    modifier =
+                        Modifier.fillMaxSize()
+                            .padding(padding)
+                            .imePadding()
+                            .padding(horizontal = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    contentPadding = PaddingValues(bottom = 24.dp),
+                ) {
+                    if (stage == "export") {
+                        item {
                             Text(
-                                if (selected.size == vm.servers.size) "Deselect all"
-                                else "Select all"
+                                "Export saved SSH connections",
+                                style = MaterialTheme.typography.titleLarge,
                             )
                         }
-                    }
-                    items(vm.servers, key = { it.id }) { server ->
-                        Row {
-                            Checkbox(
-                                server.id in selected,
-                                { checked ->
+                        item {
+                            TextButton(
+                                onClick = {
                                     selected =
-                                        if (checked) selected + server.id else selected - server.id
+                                        if (selected.size == vm.servers.size) emptySet()
+                                        else vm.servers.map { it.id }.toSet()
                                 },
                                 enabled = !busy,
-                            )
-                            Column {
-                                Text(server.title)
+                            ) {
                                 Text(
-                                    "${server.user}@${server.host}:${server.port}",
-                                    style = MaterialTheme.typography.bodySmall,
+                                    if (selected.size == vm.servers.size) "Deselect all"
+                                    else "Select all"
                                 )
                             }
                         }
-                    }
-                    item {
-                        Row {
-                            Checkbox(includeSecrets, { includeSecrets = it }, enabled = !busy)
-                            Text("Include saved passwords and private keys")
-                        }
-                    }
-                    item {
-                        Text(
-                            "The entire file is encrypted. Use a separate long password; a forgotten file password cannot be recovered."
-                        )
-                    }
-                    item {
-                        FilePassword("File password (12+ characters)", password, !busy) {
-                            password = it
-                        }
-                    }
-                    item { FilePassword("Repeat file password", repeat, !busy) { repeat = it } }
-                    item {
-                        Button(
-                            enabled =
-                                !busy &&
-                                    selected.isNotEmpty() &&
-                                    password.isNotEmpty() &&
-                                    password == repeat,
-                            onClick = {
-                                val secret = password
-                                val ids = selected
-                                val secrets = includeSecrets
-                                busy = true
-                                message = null
-                                scope.launch {
-                                    try {
-                                        output =
-                                            withContext(Dispatchers.IO) {
-                                                val entries =
-                                                    vm.store
-                                                        .servers()
-                                                        .filter { it.id in ids }
-                                                        .map {
-                                                            TermEntry(
-                                                                it,
-                                                                if (secrets)
-                                                                    vm.store.credentials(it.id)
-                                                                else null,
-                                                            )
-                                                        }
-                                                TermArchive.encode(entries, secret)
-                                            }
-                                        vm.externalFileFlow = true
-                                        writer.launch("ModernTerm-connections.term")
-                                    } catch (e: Exception) {
-                                        message = e.message ?: "Export failed."
-                                    } finally {
-                                        password = ""
-                                        repeat = ""
-                                        busy = false
-                                    }
-                                }
-                            },
-                        ) {
-                            Text("Export ${selected.size} connections")
-                        }
-                    }
-                    item { HorizontalDivider() }
-                    item {
-                        OutlinedButton(
-                            enabled = !busy,
-                            onClick = {
-                                password = ""
-                                repeat = ""
-                                vm.externalFileFlow = true
-                                picker.launch(arrayOf("*/*"))
-                            },
-                        ) {
-                            Text("Choose .term files…")
-                        }
-                    }
-                    item {
-                        Text(
-                            "Select up to 20 files / 16 MiB total. Preview before saving. Host trust is not transferred."
-                        )
-                    }
-                } else if (files.isNotEmpty()) {
-                    item {
-                        Text("Unlock file ${fileIndex + 1} of ${files.size}")
-                        Text(fileNames.getOrNull(fileIndex) ?: "Encrypted connections")
-                    }
-                    item { FilePassword("File password", password, !busy) { password = it } }
-                    item {
-                        Button(
-                            enabled = !busy,
-                            onClick = {
-                                val data = files[fileIndex]
-                                val secret = password
-                                busy = true
-                                message = null
-                                scope.launch {
-                                    try {
-                                        val entries =
-                                            withContext(Dispatchers.Default) {
-                                                TermArchive.decode(data, secret)
-                                            }
-                                        require(decoded.size + entries.size <= 200) {
-                                            "Import exceeds 200 connections."
-                                        }
-                                        decoded = decoded + entries
-                                        fileIndex++
-                                        password = ""
-                                        if (fileIndex == files.size) {
-                                            groups = TermArchive.grouped(decoded)
-                                            mergedDuplicates =
-                                                decoded.size - groups.sumOf { it.size }
-                                            decoded = emptyList()
-                                            files = emptyList()
-                                        }
-                                    } catch (e: Exception) {
-                                        message = e.message ?: "Invalid connection data."
-                                    } finally {
-                                        busy = false
-                                    }
-                                }
-                            },
-                        ) {
-                            Text("Unlock and continue")
-                        }
-                    }
-                    item {
-                        TextButton(enabled = !busy, onClick = { reset() }) { Text("Cancel import") }
-                    }
-                } else {
-                    item {
-                        Text("Import preview", style = MaterialTheme.typography.titleLarge)
-                        Text(
-                            "${ready().size} new connections; ${groups.size - ready().size} skipped. Nothing connects automatically."
-                        )
-                    }
-                    item {
-                        Text(
-                            "${groups.count { group -> vm.servers.any { it.id == group[0].server.id } }} already saved; ${groups.count { it.size > 1 }} conflicting IDs; $mergedDuplicates identical entries merged. Versions follow selected file order.",
-                            style = MaterialTheme.typography.bodySmall,
-                        )
-                    }
-                    items(groups, key = { it[0].server.id }) { group ->
-                        val id = group[0].server.id
-                        val choice = choices[id] ?: if (group.size == 1) 0 else -1
-                        ElevatedCard {
-                            Column(Modifier.padding(12.dp)) {
-                                Text(group[0].server.title)
-                                if (group.size > 1) Text("Conflicting versions — choose one")
-                                Row {
-                                    RadioButton(
-                                        choice == -1,
-                                        { choices = choices + (id to -1) },
-                                        enabled = !busy,
+                        items(vm.servers, key = { it.id }) { server ->
+                            Row {
+                                Checkbox(
+                                    server.id in selected,
+                                    { checked ->
+                                        selected =
+                                            if (checked) selected + server.id
+                                            else selected - server.id
+                                    },
+                                    enabled = !busy,
+                                )
+                                Column {
+                                    Text(server.title)
+                                    Text(
+                                        "${server.user}@${server.host}:${server.port}",
+                                        style = MaterialTheme.typography.bodySmall,
                                     )
-                                    Text("Skip")
                                 }
-                                group.forEachIndexed { i, entry ->
+                            }
+                        }
+                        item {
+                            Row {
+                                Checkbox(includeSecrets, { includeSecrets = it }, enabled = !busy)
+                                Text("Include saved passwords and private keys")
+                            }
+                        }
+                        item {
+                            Text(
+                                "The entire file is encrypted. Use a separate long password; a forgotten file password cannot be recovered."
+                            )
+                        }
+                        item {
+                            FilePassword("File password (12+ characters)", password, !busy) {
+                                password = it
+                            }
+                        }
+                        item { FilePassword("Repeat file password", repeat, !busy) { repeat = it } }
+                        item {
+                            Button(
+                                enabled =
+                                    !busy &&
+                                        selected.isNotEmpty() &&
+                                        password.isNotEmpty() &&
+                                        password == repeat,
+                                onClick = {
+                                    val secret = password
+                                    val ids = selected
+                                    val secrets = includeSecrets
+                                    busy = true
+                                    message = null
+                                    scope.launch {
+                                        try {
+                                            output =
+                                                withContext(Dispatchers.IO) {
+                                                    val entries =
+                                                        vm.store
+                                                            .servers()
+                                                            .filter { it.id in ids }
+                                                            .map {
+                                                                TermEntry(
+                                                                    it,
+                                                                    if (secrets)
+                                                                        vm.store.credentials(it.id)
+                                                                    else null,
+                                                                )
+                                                            }
+                                                    TermArchive.encode(entries, secret)
+                                                }
+                                            vm.externalFileFlow = true
+                                            writer.launch("ModernTerm-connections.term")
+                                        } catch (e: Exception) {
+                                            message = e.message ?: "Export failed."
+                                        } finally {
+                                            password = ""
+                                            repeat = ""
+                                            busy = false
+                                        }
+                                    }
+                                },
+                            ) {
+                                Text("Export ${selected.size} connections")
+                            }
+                        }
+                        item { HorizontalDivider() }
+                        item {
+                            OutlinedButton(
+                                enabled = !busy,
+                                onClick = {
+                                    password = ""
+                                    repeat = ""
+                                    vm.externalFileFlow = true
+                                    picker.launch(arrayOf("*/*"))
+                                },
+                            ) {
+                                Text("Choose .term files…")
+                            }
+                        }
+                        item {
+                            Text(
+                                "Select up to 20 files / 16 MiB total. Preview before saving. Host trust is not transferred."
+                            )
+                        }
+                    } else if (stage == "unlock") {
+                        item {
+                            Text("Unlock file ${fileIndex + 1} of ${files.size}")
+                            Text(fileNames.getOrNull(fileIndex) ?: "Encrypted connections")
+                        }
+                        item { FilePassword("File password", password, !busy) { password = it } }
+                        item {
+                            Button(
+                                enabled = !busy,
+                                onClick = {
+                                    val data = files[fileIndex]
+                                    val secret = password
+                                    busy = true
+                                    message = null
+                                    scope.launch {
+                                        try {
+                                            val entries =
+                                                withContext(Dispatchers.Default) {
+                                                    TermArchive.decode(data, secret)
+                                                }
+                                            require(decoded.size + entries.size <= 200) {
+                                                "Import exceeds 200 connections."
+                                            }
+                                            decoded = decoded + entries
+                                            fileIndex++
+                                            password = ""
+                                            if (fileIndex == files.size) {
+                                                groups = TermArchive.grouped(decoded)
+                                                mergedDuplicates =
+                                                    decoded.size - groups.sumOf { it.size }
+                                                decoded = emptyList()
+                                                files = emptyList()
+                                            }
+                                        } catch (e: Exception) {
+                                            message = e.message ?: "Invalid connection data."
+                                        } finally {
+                                            busy = false
+                                        }
+                                    }
+                                },
+                            ) {
+                                Text("Unlock and continue")
+                            }
+                        }
+                        item {
+                            TextButton(enabled = !busy, onClick = { reset() }) {
+                                Text("Cancel import")
+                            }
+                        }
+                    } else {
+                        item {
+                            Text("Import preview", style = MaterialTheme.typography.titleLarge)
+                            Text(
+                                "${ready().size} new connections; ${groups.size - ready().size} skipped. Nothing connects automatically."
+                            )
+                        }
+                        item {
+                            Text(
+                                "${groups.count { group -> vm.servers.any { it.id == group[0].server.id } }} already saved; ${groups.count { it.size > 1 }} conflicting IDs; $mergedDuplicates identical entries merged. Versions follow selected file order.",
+                                style = MaterialTheme.typography.bodySmall,
+                            )
+                        }
+                        items(groups, key = { it[0].server.id }) { group ->
+                            val id = group[0].server.id
+                            val choice = choices[id] ?: if (group.size == 1) 0 else -1
+                            ElevatedCard {
+                                Column(Modifier.padding(12.dp)) {
+                                    Text(group[0].server.title)
+                                    if (group.size > 1) Text("Conflicting versions — choose one")
                                     Row {
                                         RadioButton(
-                                            choice == i,
-                                            { choices = choices + (id to i) },
+                                            choice == -1,
+                                            { choices = choices + (id to -1) },
                                             enabled = !busy,
                                         )
-                                        Text(
-                                            "${i+1}: ${entry.server.user}@${entry.server.host}:${entry.server.port} · ${if (entry.credentials == null) "configuration only" else "with credentials"}"
-                                        )
+                                        Text("Skip")
                                     }
+                                    group.forEachIndexed { i, entry ->
+                                        Row {
+                                            RadioButton(
+                                                choice == i,
+                                                { choices = choices + (id to i) },
+                                                enabled = !busy,
+                                            )
+                                            Text(
+                                                "${i+1}: ${entry.server.user}@${entry.server.host}:${entry.server.port} · ${if (entry.credentials == null) "configuration only" else "with credentials"}"
+                                            )
+                                        }
+                                    }
+                                    if (vm.servers.any { it.id == id })
+                                        Row {
+                                            Checkbox(
+                                                id in copies,
+                                                { copies = if (it) copies + id else copies - id },
+                                                enabled = !busy,
+                                            )
+                                            Text("Already saved — import as a new copy")
+                                        }
                                 }
-                                if (vm.servers.any { it.id == id })
-                                    Row {
-                                        Checkbox(
-                                            id in copies,
-                                            { copies = if (it) copies + id else copies - id },
-                                            enabled = !busy,
-                                        )
-                                        Text("Already saved — import as a new copy")
+                            }
+                        }
+                        item {
+                            Text(
+                                "Configuration-only connections may need credentials before connecting."
+                            )
+                        }
+                        item {
+                            Button(
+                                enabled = !busy && ready().isNotEmpty(),
+                                onClick = {
+                                    val entries = ready()
+                                    busy = true
+                                    critical = true
+                                    scope.launch {
+                                        try {
+                                            val count =
+                                                withContext(Dispatchers.IO) {
+                                                    vm.store.importTerm(entries)
+                                                }
+                                            vm.reload()
+                                            reset()
+                                            message = "Imported $count connections."
+                                        } catch (e: Exception) {
+                                            message = e.message ?: "Import failed."
+                                        } finally {
+                                            critical = false
+                                            busy = false
+                                        }
                                     }
+                                },
+                            ) {
+                                Text("Import ${ready().size} connections")
+                            }
+                        }
+                        item {
+                            TextButton(enabled = !busy, onClick = { reset() }) {
+                                Text("Cancel import")
                             }
                         }
                     }
-                    item {
-                        Text(
-                            "Configuration-only connections may need credentials before connecting."
-                        )
-                    }
-                    item {
-                        Button(
-                            enabled = !busy && ready().isNotEmpty(),
-                            onClick = {
-                                val entries = ready()
-                                busy = true
-                                critical = true
-                                scope.launch {
-                                    try {
-                                        val count =
-                                            withContext(Dispatchers.IO) {
-                                                vm.store.importTerm(entries)
-                                            }
-                                        vm.reload()
-                                        reset()
-                                        message = "Imported $count connections."
-                                    } catch (e: Exception) {
-                                        message = e.message ?: "Import failed."
-                                    } finally {
-                                        critical = false
-                                        busy = false
-                                    }
-                                }
-                            },
-                        ) {
-                            Text("Import ${ready().size} connections")
-                        }
-                    }
-                    item {
-                        TextButton(enabled = !busy, onClick = { reset() }) { Text("Cancel import") }
-                    }
+                    if (busy) item { LinearProgressIndicator(Modifier.fillMaxWidth()) }
+                    message?.let { item { Text(it) } }
                 }
-                if (busy) item { LinearProgressIndicator(Modifier.fillMaxWidth()) }
-                message?.let { item { Text(it) } }
             }
         }
     }
