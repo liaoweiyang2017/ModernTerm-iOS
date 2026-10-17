@@ -2,10 +2,12 @@
 
 独立的原生 SwiftUI + UIKit SSH 客户端，沿用 Modernterm 的应用图标。AppKit 只适用于 macOS，因此移动端采用 UIKit 的 SwiftTerm 终端视图。当前版本 0.2.3，iOS / iPadOS 17+。
 
+[下载 0.2.3 (6) 安装包与校验文件](https://github.com/liaoweiyang2017/ModernTerm-iOS/releases/tag/v0.2.3-build6) · [本次验收记录](specs/004-term-transfer/validation.md)
+
 ## 平台入口
 
 - iOS / iPadOS：仓库根目录 `ModerntermIOS.xcodeproj`，下文保留原iOS说明。
-- Android：独立 Kotlin / Compose Material 3 工程 [android/](android/README.md)，Android 10+，版本 0.2.3 (5)。
+- Android：独立 Kotlin / Compose Material 3 工程 [android/](android/README.md)，Android 10+，版本 0.2.3 (6)。
 - Android规范与逐项验收：[specs/003-android-material/](specs/003-android-material/spec.md)。
 
 ## iOS 功能
