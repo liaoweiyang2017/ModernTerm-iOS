@@ -58,6 +58,7 @@ struct RootScreen: View {
   @State private var overview = false
   @State private var settings = false
   @State private var macros = false
+  @State private var transfer = false
   @State private var deleteServer: Server?
   @State private var error: String?
   var filtered: [Server] {
@@ -118,7 +119,8 @@ struct RootScreen: View {
       .searchable(text: $query, prompt: "Search servers")
       .navigationTitle("ModernTerm")
       .toolbar {
-        ToolbarItem(placement: .topBarTrailing) {
+        ToolbarItemGroup(placement: .topBarTrailing) {
+          Button("SSH transfer", systemImage: "square.and.arrow.up.on.square") { transfer = true }
           Button("Add server", systemImage: "plus") { editing = Server() }
         }
         ToolbarItemGroup(placement: .bottomBar) {
@@ -151,6 +153,7 @@ struct RootScreen: View {
       }
     }
     .sheet(isPresented: $settings) { SettingsScreen() }
+    .sheet(isPresented: $transfer) { TermTransferScreen() }
     .sheet(isPresented: $macros) {
       MacrosScreen(session: workspace.sessions.first(where: { $0.id == workspace.selected }))
     }

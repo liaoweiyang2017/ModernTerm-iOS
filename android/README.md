@@ -1,6 +1,6 @@
 # ModernTerm for Android
 
-Kotlin + Jetpack Compose / Material 3. Version **0.2.3 (5)**, `minSdk 29` (Android 10), `compileSdk/targetSdk 36`. The release package is `com.modernterm.android`; debug builds use `.debug` and have separate data.
+Kotlin + Jetpack Compose / Material 3. Version **0.2.3 (6)**, `minSdk 29` (Android 10), `compileSdk/targetSdk 36`. The release package is `com.modernterm.android`; debug builds use `.debug` and have separate data.
 
 ## Features
 
@@ -9,6 +9,7 @@ Kotlin + Jetpack Compose / Material 3. Version **0.2.3 (5)**, `minSdk 29` (Andro
 - Local bundled terminal with Chinese IME, PTY resize, keyboard controls, copy/paste through WebView, 18 palettes and Ubuntu Neo Auto.
 - SFTP listing, Storage Access Framework uploads/downloads, sharing, protected directory deletion, UTF-8 editing up to 2 MiB and baseline conflict checks.
 - Read-only Linux CPU/core, memory/swap, network/TCP, disks/IOPS, temperature, available NVIDIA/Docker/process metrics, 60-sample trends and multi-server overview.
+- Cross-platform encrypted `.term` connection bundles: multi-select export, optional credentials, batch file import, duplicate/conflict preview and crash-recoverable storage.
 - Saved commands, optional host-matched OSC 7 directory following and v1 Mac migration JSON import.
 - System/light/dark appearance, Android 12+ dynamic colors with Android 10 fallback, large-screen navigation rail and server/detail layout.
 - Android Keystore-encrypted credentials, no Google Play Services requirement, no telemetry or credential sync. Connections end when the app goes into the background; temporary file-picker flows have a bounded grace period.
@@ -55,3 +56,11 @@ Simulation does not prove Huawei ROM, actual ARM phones, third-party keyboards o
 ## Scope limits
 
 No local shell, SSH tunnel, permanent background daemon, automatic reconnection, recursive transfer, privileged server configuration or automatic command replay. Remote editing uses baseline comparison plus temporary-file replacement and is not a multi-user transaction. GPU/Docker data requires existing server commands/permissions. Migration input files are not deleted automatically. Release shrinks neither reflective crypto classes nor terminal assets; it prioritizes verified compatibility over minimum APK size.
+
+## Encrypted connection transfer
+
+Open **SSH transfer** from the top toolbar. Select connections, optionally include stored passwords/private keys, and set a separate file password (12+ characters). Save the `.term` through the system file picker. All configuration and credentials are AES-256-GCM encrypted. Share the password separately; forgotten passwords cannot be recovered.
+
+Choose up to 20 `.term` files (16 MiB combined), unlock each, then review the merged preview. Existing UUIDs are skipped unless you choose a new copy. Conflicting versions require an explicit choice; existing connections/credentials are never overwritten. Configuration-only imports may require credentials before connecting. Trust fingerprints are not transferred. Imports do not connect automatically. Cancelling or invalid files makes no configuration changes; an interrupted app process discards the pending preview.
+
+Format and interoperability fixtures: [shared/term-transfer](../shared/term-transfer/README.md). Acceptance: [specs/004](../specs/004-term-transfer/validation.md).

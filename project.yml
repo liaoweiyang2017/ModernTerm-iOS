@@ -7,7 +7,7 @@ settings:
   base:
     SWIFT_VERSION: '5.0'
     MARKETING_VERSION: 0.2.3
-    CURRENT_PROJECT_VERSION: 5
+    CURRENT_PROJECT_VERSION: 6
     GENERATE_INFOPLIST_FILE: YES
     CODE_SIGN_STYLE: Automatic
 packages:
@@ -39,6 +39,20 @@ targets:
         INFOPLIST_KEY_UIApplicationSceneManifest_Generation: YES
         TARGETED_DEVICE_FAMILY: '1,2'
         SUPPORTS_MACCATALYST: NO
+    info:
+      path: Configuration/Info.plist
+      properties:
+        CFBundleDocumentTypes:
+          - CFBundleTypeName: ModernTerm encrypted connections
+            LSHandlerRank: Owner
+            LSItemContentTypes: [com.modernterm.archive]
+        UTExportedTypeDeclarations:
+          - UTTypeIdentifier: com.modernterm.archive
+            UTTypeDescription: ModernTerm encrypted connections
+            UTTypeConformsTo: [public.data]
+            UTTypeTagSpecification:
+              public.filename-extension: [term]
+              public.mime-type: application/x-modernterm
     entitlements:
       path: Sources/ModernTerm.entitlements
       properties:
@@ -59,7 +73,17 @@ targets:
   ModerntermTests:
     type: bundle.unit-test
     platform: iOS
-    sources: [Tests]
+    sources:
+      - path: Tests
+      - path: shared/term-transfer
+        excludes: ["*.py", "*.md"]
+        buildPhase: resources
+    dependencies:
+      - target: ModerntermIOS
+  ModerntermUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources: [UITests]
     dependencies:
       - target: ModerntermIOS
 schemes:
@@ -68,5 +92,6 @@ schemes:
       targets:
         ModerntermIOS: all
         ModerntermTests: [test]
+        ModerntermUITests: [test]
     test:
-      targets: [ModerntermTests]
+      targets: [ModerntermTests, ModerntermUITests]

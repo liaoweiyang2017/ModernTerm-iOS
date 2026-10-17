@@ -71,6 +71,8 @@ fun ModernTermApp(vm: Workspace) {
         var editing by remember { mutableStateOf<Server?>(null) }
         var delete by remember { mutableStateOf<Server?>(null) }
         var query by remember { mutableStateOf("") }
+        var transfer by remember { mutableStateOf(false) }
+        if (transfer) TermTransferScreen(vm) { transfer = false }
         val selected = vm.sessions.find { it.server.id == vm.selected }
         BackHandler(selected != null) { vm.selected = null }
         BoxWithConstraints(Modifier.fillMaxSize().statusBarsPadding()) {
@@ -96,6 +98,9 @@ fun ModernTermApp(vm: Workspace) {
                                 }
                         },
                         actions = {
+                            IconButton(onClick = { transfer = true }) {
+                                Icon(Icons.Default.ImportExport, "SSH transfer")
+                            }
                             if (selected != null) {
                                 TextButton(
                                     onClick = {

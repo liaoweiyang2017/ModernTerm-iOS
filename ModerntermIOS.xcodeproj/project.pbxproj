@@ -21,26 +21,41 @@
 		6C80BE03A2E41CCA6F477BA9 /* SwiftTerm in Frameworks */ = {isa = PBXBuildFile; productRef = 3A2B67D1471F91B3A79778BC /* SwiftTerm */; };
 		70B588773A0AEB2C49CAC510 /* palettes.json in Resources */ = {isa = PBXBuildFile; fileRef = DAEC02A237979CC746749E33 /* palettes.json */; };
 		7A13F0A261EB253DFD1448B1 /* RSAHostKeyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC649BBFD61B3378D07A2214 /* RSAHostKeyTests.swift */; };
+		7ABC4CEFCC46BDCAA4039815 /* reference.term in Resources */ = {isa = PBXBuildFile; fileRef = 7ED26D46896C3E4537C33AEF /* reference.term */; };
 		7BCDB3F3314C717A98765853 /* PaletteProvenance.json in Resources */ = {isa = PBXBuildFile; fileRef = CF1DBF23EBF4D4168482E904 /* PaletteProvenance.json */; };
 		7E2216AE7CD86EA43A6288F9 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9B1A15AD25BB65EE21922107 /* Assets.xcassets */; };
 		852EE47FE3390DB47041DBFE /* SSHSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB8A547CC551054CA2DF954B /* SSHSession.swift */; };
+		95F5B89C0516E6B8D12BFAA6 /* reference.json in Resources */ = {isa = PBXBuildFile; fileRef = 5034F46C3B37C7D67BEC5E1C /* reference.json */; };
 		972C5ADE1B63D646E75AB1EC /* _CryptoExtras in Frameworks */ = {isa = PBXBuildFile; productRef = 273A6936A0D09B74974A58DB /* _CryptoExtras */; };
 		99CF70CD1926658799A10386 /* Citadel in Frameworks */ = {isa = PBXBuildFile; productRef = 826B073E2F09B2438979319D /* Citadel */; };
 		9ADD776A38EFFB6AC076B4CE /* ThirdParty.txt in Resources */ = {isa = PBXBuildFile; fileRef = EF35C3A2A322754645300671 /* ThirdParty.txt */; };
+		A10064D44273DDD03ABA58D9 /* ios-export.term in Resources */ = {isa = PBXBuildFile; fileRef = 4FE3AD569BB5BB85BA1D3A5A /* ios-export.term */; };
+		A16432E8D0B90BC5098BED33 /* android-export.term in Resources */ = {isa = PBXBuildFile; fileRef = D7EE19AD77EA8A50A0CE1F6C /* android-export.term */; };
+		A3377CE71073E84632DB0EDC /* TermTransferUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF3DAC7192B8BE86983B9235 /* TermTransferUITests.swift */; };
 		A4242B72F0B557337A29F29D /* MacMigration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7244E171FD6252D27AD1F441 /* MacMigration.swift */; };
+		AC30566D34745BF6B5A610ED /* TermArchiveTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1C0D9F5F4D684E627C6BD90 /* TermArchiveTests.swift */; };
 		B1D575C71DF52CB7E7DF66F8 /* PasswordConnectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7A74A91BD4F0E67D0DD8FDB /* PasswordConnectionTests.swift */; };
 		B45BA7216E30CF7DDA90FD03 /* Crypto in Frameworks */ = {isa = PBXBuildFile; productRef = 7641CA59251BCC565C02EEB2 /* Crypto */; };
 		C622485B6F4C5B6C5D061D7A /* GatewayProbeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4528BF022C57D014F78BB49 /* GatewayProbeTests.swift */; };
 		D7F3A13EFB110AC4ECB54839 /* MetricsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8BB3E65C9F6C90CE8A02B91 /* MetricsTests.swift */; };
 		D82A00DA6498A9A6E4230E3B /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 755C0BBA801DD62F8EA11710 /* Models.swift */; };
+		DF6FE620844DA5F088FC95EA /* TermTransferScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F2240472F2196DA2B5D7607 /* TermTransferScreen.swift */; };
 		EB361F67970E47E22AD15919 /* TerminalThemeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2233DCA524C5718037A6D6B /* TerminalThemeTests.swift */; };
 		ED235DC279096104B9C41AE2 /* ConnectionFailureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF4552FF65F05A75E7CA366D /* ConnectionFailureTests.swift */; };
+		F175FA9259D4F746EC8E35AD /* TermArchive.swift in Sources */ = {isa = PBXBuildFile; fileRef = D63D61021347821C5D69EE80 /* TermArchive.swift */; };
 		F703A35209861359066149FA /* ServerMetrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C7D5395F96BCD117BD3F337 /* ServerMetrics.swift */; };
 		F874D9D19D7C3F99D0392CA5 /* ModerntermTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4A1F4C5129B7F5D35386AF0 /* ModerntermTests.swift */; };
 		FF3482B62125B8961BBECF68 /* RSAHostKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 842BF83EE5E882C99EAF085A /* RSAHostKey.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		011E761BEAC9E74A28E2B4AD /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F5E9C655758824794B2FF594 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E47253F970F5747413A956DE;
+			remoteInfo = ModerntermIOS;
+		};
 		67E76F3A9D0E8E3ED2DAD5CE /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = F5E9C655758824794B2FF594 /* Project object */;
@@ -55,18 +70,25 @@
 		155F4C3A0398B43053E423EE /* swift-nio-ssh */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "swift-nio-ssh"; path = "Vendor/swift-nio-ssh"; sourceTree = SOURCE_ROOT; };
 		1C7D5395F96BCD117BD3F337 /* ServerMetrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerMetrics.swift; sourceTree = "<group>"; };
 		45B1B37CD381E478447ACB93 /* MigrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MigrationTests.swift; sourceTree = "<group>"; };
+		4FE3AD569BB5BB85BA1D3A5A /* ios-export.term */ = {isa = PBXFileReference; path = "ios-export.term"; sourceTree = "<group>"; };
+		5034F46C3B37C7D67BEC5E1C /* reference.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = reference.json; sourceTree = "<group>"; };
 		5458393C9391D7520034F255 /* MonitoringScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonitoringScreen.swift; sourceTree = "<group>"; };
 		5F808DB76DE1E2B4B7792907 /* FilesScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilesScreen.swift; sourceTree = "<group>"; };
 		6BED593D0FAD92BAFFABE4E4 /* Citadel */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Citadel; path = Vendor/Citadel; sourceTree = SOURCE_ROOT; };
 		7244E171FD6252D27AD1F441 /* MacMigration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacMigration.swift; sourceTree = "<group>"; };
 		755C0BBA801DD62F8EA11710 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
 		799959767E315FA8EA919272 /* TerminalInputView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalInputView.swift; sourceTree = "<group>"; };
+		7ED26D46896C3E4537C33AEF /* reference.term */ = {isa = PBXFileReference; path = reference.term; sourceTree = "<group>"; };
+		7F2240472F2196DA2B5D7607 /* TermTransferScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TermTransferScreen.swift; sourceTree = "<group>"; };
 		842BF83EE5E882C99EAF085A /* RSAHostKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RSAHostKey.swift; sourceTree = "<group>"; };
 		85C8E842DEE2BFA311753B1B /* MonitoringPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonitoringPreview.swift; sourceTree = "<group>"; };
 		917CB8537099E4CB223C198F /* ModerntermIOS.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = ModerntermIOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		977F66D406FC566745E48B81 /* TerminalScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalScreen.swift; sourceTree = "<group>"; };
 		9B1A15AD25BB65EE21922107 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		AF3DAC7192B8BE86983B9235 /* TermTransferUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TermTransferUITests.swift; sourceTree = "<group>"; };
+		B1C0D9F5F4D684E627C6BD90 /* TermArchiveTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TermArchiveTests.swift; sourceTree = "<group>"; };
 		B4A1F4C5129B7F5D35386AF0 /* ModerntermTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModerntermTests.swift; sourceTree = "<group>"; };
+		BB58011ED801E0FD89183341 /* ModerntermUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = ModerntermUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		BC649BBFD61B3378D07A2214 /* RSAHostKeyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RSAHostKeyTests.swift; sourceTree = "<group>"; };
 		C4528BF022C57D014F78BB49 /* GatewayProbeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GatewayProbeTests.swift; sourceTree = "<group>"; };
 		C51DF49895FB1F0735D94EA2 /* ConnectionFailure.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectionFailure.swift; sourceTree = "<group>"; };
@@ -75,6 +97,8 @@
 		CB8A547CC551054CA2DF954B /* SSHSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SSHSession.swift; sourceTree = "<group>"; };
 		CF1DBF23EBF4D4168482E904 /* PaletteProvenance.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = PaletteProvenance.json; sourceTree = "<group>"; };
 		CF4552FF65F05A75E7CA366D /* ConnectionFailureTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectionFailureTests.swift; sourceTree = "<group>"; };
+		D63D61021347821C5D69EE80 /* TermArchive.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TermArchive.swift; sourceTree = "<group>"; };
+		D7EE19AD77EA8A50A0CE1F6C /* android-export.term */ = {isa = PBXFileReference; path = "android-export.term"; sourceTree = "<group>"; };
 		DAEC02A237979CC746749E33 /* palettes.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = palettes.json; sourceTree = "<group>"; };
 		EAD6FEC9CA519470FED0F73C /* ModernTermApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModernTermApp.swift; sourceTree = "<group>"; };
 		EF35C3A2A322754645300671 /* ThirdParty.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = ThirdParty.txt; sourceTree = "<group>"; };
@@ -106,7 +130,9 @@
 				CD5E34B47DB81D68D7C8365A /* Packages */,
 				B0D64E7C42C3D3C015BF87BD /* Resources */,
 				11C7A6D35ED945340FD379F2 /* Sources */,
+				1D03C9F1206BE58592C5CD24 /* term-transfer */,
 				52BE9A17DA6C11D8D053FC08 /* Tests */,
+				EA280A51764E95C8A08D84C5 /* UITests */,
 				15FE0CBDD44D99EA8921CC8F /* Products */,
 			);
 			sourceTree = "<group>";
@@ -125,8 +151,10 @@
 				842BF83EE5E882C99EAF085A /* RSAHostKey.swift */,
 				1C7D5395F96BCD117BD3F337 /* ServerMetrics.swift */,
 				CB8A547CC551054CA2DF954B /* SSHSession.swift */,
+				D63D61021347821C5D69EE80 /* TermArchive.swift */,
 				799959767E315FA8EA919272 /* TerminalInputView.swift */,
 				977F66D406FC566745E48B81 /* TerminalScreen.swift */,
+				7F2240472F2196DA2B5D7607 /* TermTransferScreen.swift */,
 			);
 			path = Sources;
 			sourceTree = "<group>";
@@ -136,8 +164,21 @@
 			children = (
 				917CB8537099E4CB223C198F /* ModerntermIOS.app */,
 				C5F563F2B413B30768D541E2 /* ModerntermTests.xctest */,
+				BB58011ED801E0FD89183341 /* ModerntermUITests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		1D03C9F1206BE58592C5CD24 /* term-transfer */ = {
+			isa = PBXGroup;
+			children = (
+				D7EE19AD77EA8A50A0CE1F6C /* android-export.term */,
+				4FE3AD569BB5BB85BA1D3A5A /* ios-export.term */,
+				5034F46C3B37C7D67BEC5E1C /* reference.json */,
+				7ED26D46896C3E4537C33AEF /* reference.term */,
+			);
+			name = "term-transfer";
+			path = "shared/term-transfer";
 			sourceTree = "<group>";
 		};
 		52BE9A17DA6C11D8D053FC08 /* Tests */ = {
@@ -150,6 +191,7 @@
 				B4A1F4C5129B7F5D35386AF0 /* ModerntermTests.swift */,
 				C7A74A91BD4F0E67D0DD8FDB /* PasswordConnectionTests.swift */,
 				BC649BBFD61B3378D07A2214 /* RSAHostKeyTests.swift */,
+				B1C0D9F5F4D684E627C6BD90 /* TermArchiveTests.swift */,
 				F0A983A8515EFBCA726ACF97 /* TerminalKeyboardTests.swift */,
 				F2233DCA524C5718037A6D6B /* TerminalThemeTests.swift */,
 			);
@@ -176,6 +218,14 @@
 			name = Packages;
 			sourceTree = "<group>";
 		};
+		EA280A51764E95C8A08D84C5 /* UITests */ = {
+			isa = PBXGroup;
+			children = (
+				AF3DAC7192B8BE86983B9235 /* TermTransferUITests.swift */,
+			);
+			path = UITests;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -184,6 +234,7 @@
 			buildConfigurationList = B242AAC9C88F0EDC74D23D0B /* Build configuration list for PBXNativeTarget "ModerntermTests" */;
 			buildPhases = (
 				1309644BAFB07F7B8DFDBB4D /* Sources */,
+				1D08F6F57F3BD339888C3218 /* Resources */,
 			);
 			buildRules = (
 			);
@@ -196,6 +247,24 @@
 			productName = ModerntermTests;
 			productReference = C5F563F2B413B30768D541E2 /* ModerntermTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		5DCF71D2E27CAC0A08D40A03 /* ModerntermUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DD41B5838AB71E8FD73E43C7 /* Build configuration list for PBXNativeTarget "ModerntermUITests" */;
+			buildPhases = (
+				D4459AA01BC4CA345634A6B5 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				74FFF1F45157EBE5E38CB000 /* PBXTargetDependency */,
+			);
+			name = ModerntermUITests;
+			packageProductDependencies = (
+			);
+			productName = ModerntermUITests;
+			productReference = BB58011ED801E0FD89183341 /* ModerntermUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 		E47253F970F5747413A956DE /* ModerntermIOS */ = {
 			isa = PBXNativeTarget;
@@ -234,6 +303,10 @@
 					4BFCC5AACA71C54E6F8C09E9 = {
 						ProvisioningStyle = Automatic;
 					};
+					5DCF71D2E27CAC0A08D40A03 = {
+						ProvisioningStyle = Automatic;
+						TestTargetID = E47253F970F5747413A956DE;
+					};
 					E47253F970F5747413A956DE = {
 						ProvisioningStyle = Automatic;
 					};
@@ -262,11 +335,23 @@
 			targets = (
 				E47253F970F5747413A956DE /* ModerntermIOS */,
 				4BFCC5AACA71C54E6F8C09E9 /* ModerntermTests */,
+				5DCF71D2E27CAC0A08D40A03 /* ModerntermUITests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		1D08F6F57F3BD339888C3218 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A16432E8D0B90BC5098BED33 /* android-export.term in Resources */,
+				A10064D44273DDD03ABA58D9 /* ios-export.term in Resources */,
+				95F5B89C0516E6B8D12BFAA6 /* reference.json in Resources */,
+				7ABC4CEFCC46BDCAA4039815 /* reference.term in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		3C6A6744A9E63A03F361D4DC /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -292,6 +377,7 @@
 				F874D9D19D7C3F99D0392CA5 /* ModerntermTests.swift in Sources */,
 				B1D575C71DF52CB7E7DF66F8 /* PasswordConnectionTests.swift in Sources */,
 				7A13F0A261EB253DFD1448B1 /* RSAHostKeyTests.swift in Sources */,
+				AC30566D34745BF6B5A610ED /* TermArchiveTests.swift in Sources */,
 				48CA3592D3099D8127A235B7 /* TerminalKeyboardTests.swift in Sources */,
 				EB361F67970E47E22AD15919 /* TerminalThemeTests.swift in Sources */,
 			);
@@ -311,8 +397,18 @@
 				FF3482B62125B8961BBECF68 /* RSAHostKey.swift in Sources */,
 				852EE47FE3390DB47041DBFE /* SSHSession.swift in Sources */,
 				F703A35209861359066149FA /* ServerMetrics.swift in Sources */,
+				F175FA9259D4F746EC8E35AD /* TermArchive.swift in Sources */,
+				DF6FE620844DA5F088FC95EA /* TermTransferScreen.swift in Sources */,
 				3053C58924E9B6F916023FFD /* TerminalInputView.swift in Sources */,
 				60BF2766954F08C4C9F097EB /* TerminalScreen.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D4459AA01BC4CA345634A6B5 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A3377CE71073E84632DB0EDC /* TermTransferUITests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -324,6 +420,11 @@
 			target = E47253F970F5747413A956DE /* ModerntermIOS */;
 			targetProxy = 67E76F3A9D0E8E3ED2DAD5CE /* PBXContainerItemProxy */;
 		};
+		74FFF1F45157EBE5E38CB000 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E47253F970F5747413A956DE /* ModerntermIOS */;
+			targetProxy = 011E761BEAC9E74A28E2B4AD /* PBXContainerItemProxy */;
+		};
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
@@ -333,6 +434,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = Sources/ModernTerm.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				INFOPLIST_FILE = Configuration/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = ModernTerm;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
 				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "Connect to your SSH servers on the local network.";
@@ -346,6 +448,22 @@
 				SDKROOT = iphoneos;
 				SUPPORTS_MACCATALYST = NO;
 				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		3BD0F3D4FCD781E99E845EC1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.modernterm.ModerntermUITests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = ModerntermIOS;
 			};
 			name = Debug;
 		};
@@ -384,7 +502,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 6;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
@@ -467,7 +585,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 6;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -498,6 +616,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = Sources/ModernTerm.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				INFOPLIST_FILE = Configuration/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = ModernTerm;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
 				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "Connect to your SSH servers on the local network.";
@@ -511,6 +630,22 @@
 				SDKROOT = iphoneos;
 				SUPPORTS_MACCATALYST = NO;
 				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		DD876A2DCE4DE0698C196B46 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.modernterm.ModerntermUITests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = ModerntermIOS;
 			};
 			name = Release;
 		};
@@ -547,6 +682,15 @@
 			buildConfigurations = (
 				ED4B50C76D07F0BD26955273 /* Debug */,
 				723D4A2E311A75295F108CC3 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		DD41B5838AB71E8FD73E43C7 /* Build configuration list for PBXNativeTarget "ModerntermUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3BD0F3D4FCD781E99E845EC1 /* Debug */,
+				DD876A2DCE4DE0698C196B46 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;

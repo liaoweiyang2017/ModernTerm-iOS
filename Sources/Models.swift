@@ -18,7 +18,7 @@ struct Server: Codable, Identifiable, Equatable {
   }
   var endpoint: String { "[\(host.lowercased())]:\(port)" }
 }
-struct Credentials: Codable {
+struct Credentials: Codable, Equatable {
   var password = ""
   var privateKey = ""
   var passphrase = ""
@@ -80,6 +80,11 @@ enum Vault {
       } catch {
         self.error =
           "Could not read sessions. Existing file has been preserved: \(error.localizedDescription)"
+      }
+    }
+    if error == nil {
+      do { try recoverTransfer() } catch {
+        self.error = "Import recovery failed; saved files preserved."
       }
     }
   }
@@ -158,6 +163,60 @@ enum Vault {
         "Import failed; the private inbox file was preserved: \(error.localizedDescription)"
     }
   }
+  var transferCheckpoint: ((String) throws -> Void)?
+  private var transferJournal: URL {
+    file.deletingLastPathComponent().appendingPathComponent("term-import-journal.json")
+  }
+  private func recoverTransfer() throws {
+    guard FileManager.default.fileExists(atPath: transferJournal.path) else { return }
+    let data = try Data(contentsOf: transferJournal)
+    guard data.count <= 10000 else { throw AppError.message("Invalid import journal.") }
+    let ids = try JSONDecoder().decode([UUID].self, from: data)
+    guard ids.count <= 200 else { throw AppError.message("Invalid import journal.") }
+    let committed = Set(servers.map(\.id))
+    for id in ids where !committed.contains(id) {
+      let status = SecItemDelete(Vault.query(id) as CFDictionary)
+      guard status == errSecSuccess || status == errSecItemNotFound else {
+        throw AppError.message("Could not recover credentials.")
+      }
+    }
+    try FileManager.default.removeItem(at: transferJournal)
+  }
+  func importTerm(_ entries: [TermEntry]) throws -> Int {
+    guard error == nil else {
+      throw AppError.message("Repair saved configuration before importing.")
+    }
+    try TermArchive.validate(entries)
+    let existing = Set(servers.map(\.id))
+    guard Set(entries.map { $0.server.id }).count == entries.count,
+      entries.allSatisfy({ !existing.contains($0.server.id) }), servers.count + entries.count <= 200
+    else {
+      throw AppError.message("Connections changed or capacity exceeded. Reopen the import preview.")
+    }
+    try FileManager.default.createDirectory(
+      at: file.deletingLastPathComponent(), withIntermediateDirectories: true)
+    try JSONEncoder().encode(entries.map { $0.server.id }).write(
+      to: transferJournal, options: [.atomic, .completeFileProtection])
+    do {
+      for entry in entries {
+        try Vault.save(entry.credentials ?? Credentials(), id: entry.server.id)
+        try transferCheckpoint?("credential")
+      }
+      try transferCheckpoint?("configuration")
+      let next = servers + entries.map(\.server)
+      try persist(next)
+      servers = next
+    } catch {
+      do { try recoverTransfer() } catch {
+        self.error = "Import recovery failed. Restart to retry; further writes are blocked."
+      }
+      throw error
+    }
+    do { try recoverTransfer() } catch {
+      self.error = "Import saved, but journal cleanup failed. Restart to retry."
+    }
+    return entries.count
+  }
   private func persist(_ values: [Server]) throws {
     guard error == nil else {
       throw AppError.message("Session file is unreadable; repair it before making changes.")
@@ -172,4 +231,19 @@ func shellQuote(_ s: String) -> String {
 }
 func remotePath(_ directory: String, _ name: String) -> String {
   (directory == "/" ? "" : directory) + "/" + name
+}
+
+extension Server {
+  init(from decoder: Decoder) throws {
+    let c = try decoder.container(keyedBy: CodingKeys.self)
+    id = try c.decode(UUID.self, forKey: .id)
+    name = try c.decode(String.self, forKey: .name)
+    host = try c.decode(String.self, forKey: .host)
+    port = try c.decode(Int.self, forKey: .port)
+    user = try c.decode(String.self, forKey: .user)
+    group = try c.decode(String.self, forKey: .group)
+    favorite = try c.decode(Bool.self, forKey: .favorite)
+    keyLogin = try c.decode(Bool.self, forKey: .keyLogin)
+    distribution = try c.decodeIfPresent(String.self, forKey: .distribution) ?? "Ubuntu"
+  }
 }

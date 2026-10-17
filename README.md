@@ -51,7 +51,7 @@ SwiftTerm 固定为 1.18.0；1.20.0 的构建信息插件在本机 Xcode 的 iOS
 
 `ModerntermTests` 验证会话校验、密码与配置分离、Keychain 读写、路径引用和配色。`Scripts/integration.py` 创建临时本机 OpenSSH 服务和一次性密钥，在模拟器验证 SSH/SFTP；不读取用户服务器、SSH 配置或密钥。
 
-代码保存在私有 GitHub 项目；Android 使用专用 GitHub Actions，iOS 保留本机验证流程。生成目录、测试临时密钥和用户凭据不进入 Git。
+代码保存在私有 GitHub 项目；Android 与 iOS 均配置 GitHub Actions，保留本机验证流程。生成目录、测试临时密钥和用户凭据不进入 Git。
 
 第三方依赖：SwiftTerm（MIT）、Citadel（MIT）、SwiftNIO/NIOSSH/Crypto（Apache 2.0）、终端配色及对应来源。详见 `Resources/ThirdParty.txt` 和 `Resources/PaletteProvenance.json`。应用自有代码暂保留所有权利，不提供公共开源许可。
 
@@ -100,3 +100,9 @@ SFTP 子系统被拒绝时结束初始化并关闭该子通道，已有终端连
 `Ubuntu Neo (Auto)` 跟随应用有效浅色/深色外观；`Ubuntu Neo Dark` 和 `Ubuntu Neo Light` 为固定配色。若应用界面已变浅但终端仍深色，先核对 Terminal colors 是否选中 Auto。
 
 电脑 Device Hub 手机预览可能使系统进入外接键盘状态，即使 Capture Keyboard 已关闭，也可能仅显示辅助栏。若手机系统文字键盘不弹出，退出电脑端 Device Hub，再在手机终端点击右上角键盘按钮。本次真机对照由用户确认恢复；不需要改密码、重建会话或重装输入法。
+
+## 0.2.3 (6) 跨平台加密 SSH 连接包
+
+iOS 和 Android 顶部的 **SSH transfer** 支持多选导出、全选、多个 `.term` 文件批量导入。默认仅配置，可选包含保存的密码、私钥和口令；整个文件由独立密码加密，不能直接用文本查看连接信息。导入先预览，已有 UUID 默认跳过，可作为新副本导入；主机信任不转移，也不会自动连接。文件密码至少 12 个字符，遗忘无法恢复。
+
+[格式与互通测试](shared/term-transfer/README.md) · [需求与验收](specs/004-term-transfer/spec.md) · [实际验证记录](specs/004-term-transfer/validation.md)。本次 iOS 只完成模拟器与构建验证，真机部署由用户后续执行。

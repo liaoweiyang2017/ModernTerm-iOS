@@ -1,0 +1,33 @@
+name: iOS tests
+on:
+  push:
+    paths: ['Sources/**', 'Tests/**', 'UITests/**', 'shared/term-transfer/**', 'Configuration/**', 'project.yml', '.github/workflows/ios-tests.yml']
+  pull_request:
+    paths: ['Sources/**', 'Tests/**', 'UITests/**', 'shared/term-transfer/**', 'Configuration/**', 'project.yml', '.github/workflows/ios-tests.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: ios-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  simulator:
+    runs-on: macos-15
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: Generate Xcode project
+        run: |
+          brew install xcodegen
+          xcodegen generate
+      - name: Test on available iPhone simulator
+        run: |
+          DEVICE=$(xcrun simctl list devices available -j | python3 -c 'import json,sys; d=json.load(sys.stdin); print(next(v["udid"] for a in d["devices"].values() for v in a if v["name"].startswith("iPhone")))')
+          xcodebuild -project ModerntermIOS.xcodeproj -scheme ModerntermIOS -destination "platform=iOS Simulator,id=$DEVICE" -derivedDataPath "$RUNNER_TEMP/ModernTerm-build" -resultBundlePath "$RUNNER_TEMP/ModernTerm-tests.xcresult" CODE_SIGNING_ALLOWED=YES CODE_SIGN_IDENTITY=- test
+      - name: Test report (artifact quota permitting)
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: ModernTerm-iOS-tests
+          path: ${{ runner.temp }}/ModernTerm-tests.xcresult

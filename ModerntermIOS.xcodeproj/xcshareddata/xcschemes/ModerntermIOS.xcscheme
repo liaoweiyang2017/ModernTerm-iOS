@@ -35,6 +35,20 @@
                ReferencedContainer = "container:ModerntermIOS.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "NO"
+            buildForProfiling = "NO"
+            buildForArchiving = "NO"
+            buildForAnalyzing = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "5DCF71D2E27CAC0A08D40A03"
+               BuildableName = "ModerntermUITests.xctest"
+               BlueprintName = "ModerntermUITests"
+               ReferencedContainer = "container:ModerntermIOS.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
       </BuildActionEntries>
    </BuildAction>
    <TestAction
@@ -61,6 +75,17 @@
                BlueprintIdentifier = "4BFCC5AACA71C54E6F8C09E9"
                BuildableName = "ModerntermTests.xctest"
                BlueprintName = "ModerntermTests"
+               ReferencedContainer = "container:ModerntermIOS.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "5DCF71D2E27CAC0A08D40A03"
+               BuildableName = "ModerntermUITests.xctest"
+               BlueprintName = "ModerntermUITests"
                ReferencedContainer = "container:ModerntermIOS.xcodeproj">
             </BuildableReference>
          </TestableReference>

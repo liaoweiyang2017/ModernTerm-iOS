@@ -11,6 +11,7 @@ data class Server(
     val group: String = "Servers",
     val favorite: Boolean = false,
     val keyLogin: Boolean = false,
+    val distribution: String = "Ubuntu",
 ) {
     val endpoint: String
         get() = "[${host.lowercase()}]:$port"

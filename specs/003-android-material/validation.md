@@ -41,7 +41,7 @@ Started: 2026-10-17; final validation: 2026-10-18, Europe/Copenhagen. Product so
 
 ## CI outcome
 
-Final CI result is pending; this document will be updated with the actual run URL and per-job outcomes before final delivery. A previous API36 run passed build and three platform-gate tests; its job was then marked failed solely by artifact quota. That earlier result is not substituted for final full-suite validation.
+Base Android implementation CI passed on default branch commit ce00136: [run 39074704231](https://github.com/liaoweiyang2017/ModernTerm-iOS/actions/runs/39074704231), including API29 emulator, API36 emulator and signed APK jobs. Each emulator ran 12 instrumented tests; six JVM tests and lint passed. Artifact upload warnings reflect the account storage quota, not failed tests. The subsequent cross-platform .term feature and build 6 are tracked separately in specs/004-term-transfer/validation.md.
 
 ## Reproduction commands
 

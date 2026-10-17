@@ -1,0 +1,36 @@
+{
+  "password": "互通测试-café-🔐-2026",
+  "entries": [
+    {
+      "server": {
+        "id": "11111111-2222-4333-8444-555555555555",
+        "name": "测试 connection",
+        "host": "ssh.example.invalid",
+        "port": 2222,
+        "user": "test@ZC-M6",
+        "group": "跨平台",
+        "favorite": true,
+        "keyLogin": true,
+        "distribution": "Debian"
+      },
+      "credentials": {
+        "password": "synthetic-only",
+        "privateKey": "TEST KEY\nnot-a-real-key\n",
+        "passphrase": "口令"
+      }
+    },
+    {
+      "server": {
+        "id": "aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee",
+        "name": "Configuration only",
+        "host": "2001:db8::1",
+        "port": 22,
+        "user": "User@Group",
+        "group": "Servers",
+        "favorite": false,
+        "keyLogin": false,
+        "distribution": "Ubuntu"
+      }
+    }
+  ]
+}

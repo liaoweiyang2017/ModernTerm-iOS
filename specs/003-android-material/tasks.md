@@ -11,8 +11,8 @@
 
 - [x] T005 android/ Gradle Wrapper、固定版本目录、min29/target36、versionName0.2.3/code5；构建最小Compose应用（A01）。
 - [x] T006 Kotlin SSH实现连受控服务，验证@用户名、RSA-SHA2、Ed25519/RSA加密私钥、指纹拒绝，API29不可省略（A02/A03）。
-- [ ] T007 本地终端渲染与受限桥接，先通过CJK/IME/VT/resize/软键盘测试（A04）；失败先报告替代依赖。
-- [ ] T008 启用Android Actions，构建/lint/单元/API29+36模拟器流水线与脱敏产物（A10）。
+- [x] T007 本地终端渲染与受限桥接，先通过CJK/IME/VT/resize/软键盘测试（A04）；失败先报告替代依赖。
+- [x] T008 启用Android Actions，构建/lint/单元/API29+36模拟器流水线与脱敏产物（A10）。
 
 ## 功能实现
 
@@ -26,9 +26,9 @@
 
 ## 发布验收
 
-- [ ] T016 API29/36仪器、SSH/SFTP完整回归、截图/大字体/横屏；记录实际CI运行（A01…A10）。
+- [x] T016 API29/36仪器、SSH/SFTP完整回归、截图/大字体/横屏；记录实际CI运行（A01…A10）。
 - [x] T017 固定Release签名、备份说明、可安装APK与哈希/许可证清单（A12）。
-- [ ] T018 Mate70 exact OS待用户后续确认；无真机则明确未验证（A11），不得虚报兼容。
+- [x] T018 Mate70 exact OS待用户后续确认；无真机则明确未验证（A11），不得虚报兼容。
 - [ ] T019 更新README为iOS+Android入口，补齐逐项验证报告，提交同仓库并交付构建链接。
 
 以上为同一0.2.3目标内的分阶段任务；阶段性成功不代表最终功能齐全。

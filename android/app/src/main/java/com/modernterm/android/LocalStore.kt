@@ -24,6 +24,7 @@ fun Server.json(): JSONObject =
         .put("group", group)
         .put("favorite", favorite)
         .put("keyLogin", keyLogin)
+        .put("distribution", distribution)
 
 fun serverFromJson(j: JSONObject): Server =
     Server(
@@ -35,6 +36,7 @@ fun serverFromJson(j: JSONObject): Server =
             group = j.optString("group", "Servers"),
             favorite = j.optBoolean("favorite"),
             keyLogin = j.optBoolean("keyLogin"),
+            distribution = j.optString("distribution", "Ubuntu"),
         )
         .also { it.validate() }
 
@@ -67,6 +69,7 @@ data class ImportResult(val imported: Int, val skipped: Int)
 class LocalStore(private val context: Context) {
     private val config = AtomicFile(File(context.filesDir, "configuration.json"))
     private val secretDir = File(context.noBackupFilesDir, "credentials").apply { mkdirs() }
+    private val transferJournal = File(context.noBackupFilesDir, "term-import-journal.json")
     private var root = JSONObject()
     var loadError: String? = null
         private set
@@ -82,6 +85,9 @@ class LocalStore(private val context: Context) {
                 loadError =
                     "Saved configuration could not be read. It has been preserved; no changes will overwrite it."
             }
+        if (loadError == null)
+            runCatching { recoverTransfer() }
+                .onFailure { loadError = "Import recovery failed; saved files preserved." }
     }
 
     @Synchronized
@@ -277,6 +283,65 @@ class LocalStore(private val context: Context) {
             throw e
         }
         return ImportResult(additions.size, entries.size - additions.size)
+    }
+
+    internal var transferCheckpoint: ((String) -> Unit)? = null
+
+    private fun recoverTransfer() {
+        if (!transferJournal.exists()) return
+        require(transferJournal.length() <= 10000)
+        val ids = JSONArray(AtomicFile(transferJournal).readFully().toString(Charsets.UTF_8))
+        require(ids.length() <= 200)
+        val committed = servers().map { it.id }.toSet()
+        for (i in 0 until ids.length()) {
+            val id = UUID.fromString(ids.getString(i)).toString()
+            if (id !in committed) {
+                val f = secretFile(id)
+                check(!f.exists() || f.delete()) { "Could not recover credentials." }
+            }
+        }
+        check(transferJournal.delete()) { "Could not clean import journal." }
+    }
+
+    @Synchronized
+    fun importTerm(entries: List<TermEntry>): Int {
+        check(loadError == null) { loadError!! }
+        TermArchive.validate(entries)
+        val existing = servers()
+        require(
+            entries.map { it.server.id }.distinct().size == entries.size &&
+                entries.none { e -> existing.any { it.id == e.server.id } } &&
+                existing.size + entries.size <= 200
+        ) {
+            "Connections changed or capacity exceeded. Reopen the import preview."
+        }
+        atomicWrite(
+            transferJournal,
+            JSONArray(entries.map { it.server.id }).toString().toByteArray(),
+        )
+        try {
+            entries.forEach {
+                writeCredentials(it.server.id, it.credentials ?: Credentials())
+                transferCheckpoint?.invoke("credential")
+            }
+            transferCheckpoint?.invoke("configuration")
+            mutate {
+                it.put(
+                    "servers",
+                    JSONArray((existing + entries.map { e -> e.server }).map { s -> s.json() }),
+                )
+            }
+        } catch (e: Exception) {
+            runCatching { recoverTransfer() }
+                .onFailure {
+                    loadError =
+                        "Import recovery failed. Restart to retry; further writes are blocked."
+                }
+            throw e
+        }
+        runCatching { recoverTransfer() }
+            .onFailure { loadError = "Import saved, but journal cleanup failed. Restart to retry." }
+        return entries.size
     }
 
     private fun mutate(change: (JSONObject) -> Unit) {

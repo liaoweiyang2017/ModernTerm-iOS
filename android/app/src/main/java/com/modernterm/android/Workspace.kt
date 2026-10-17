@@ -69,7 +69,7 @@ class Workspace(app: Application) : AndroidViewModel(app) {
         store.loadError?.let { message = it }
     }
 
-    private fun reload() {
+    fun reload() {
         servers = store.servers()
         preferences = store.preferences()
         macros = store.macros()
