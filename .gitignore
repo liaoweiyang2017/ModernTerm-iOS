@@ -15,3 +15,12 @@ build-device/
 ModernTerm-Mac-Import*.json
 Tests/PasswordFixture.json
 Tests/GatewayProbe.json
+
+# Android generated files and private signing material
+android/.gradle/
+android/.kotlin/
+android/local.properties
+android/**/build/
+*.jks
+*.keystore
+android/app/src/androidTest/assets/ssh-fixture.json
