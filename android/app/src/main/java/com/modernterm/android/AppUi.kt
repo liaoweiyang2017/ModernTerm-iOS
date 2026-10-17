@@ -497,6 +497,11 @@ private fun ServerEditor(vm: Workspace, initial: Server, dismiss: () -> Unit) {
                     { passphrase = it },
                     label = { Text("Key passphrase (optional)") },
                     visualTransformation = PasswordVisualTransformation(),
+                    keyboardOptions =
+                        KeyboardOptions(
+                            keyboardType = KeyboardType.Password,
+                            autoCorrectEnabled = false,
+                        ),
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                 )
@@ -506,6 +511,11 @@ private fun ServerEditor(vm: Workspace, initial: Server, dismiss: () -> Unit) {
                     { password = it },
                     label = { Text("Password") },
                     visualTransformation = PasswordVisualTransformation(),
+                    keyboardOptions =
+                        KeyboardOptions(
+                            keyboardType = KeyboardType.Password,
+                            autoCorrectEnabled = false,
+                        ),
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                 )

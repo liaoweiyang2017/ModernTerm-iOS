@@ -1,0 +1,79 @@
+[
+  {
+    "name": "Ubuntu",
+    "url": "https://raw.githubusercontent.com/mbadolato/iTerm2-Color-Schemes/d3e95e4f7140c980988781f21534cf51e327af2c/ghostty/Ubuntu",
+    "sha256": "2d169dae785b0ed7b5125b4997b31c11f6c893a767e456ddf61b7b65a699470d"
+  },
+  {
+    "name": "Dracula",
+    "url": "https://raw.githubusercontent.com/mbadolato/iTerm2-Color-Schemes/d3e95e4f7140c980988781f21534cf51e327af2c/ghostty/Dracula",
+    "sha256": "e6990f485cb0001cd62109e5aa94d34d4f60bb85798735b995a4158ee1ff033f"
+  },
+  {
+    "name": "Nord",
+    "url": "https://raw.githubusercontent.com/mbadolato/iTerm2-Color-Schemes/d3e95e4f7140c980988781f21534cf51e327af2c/ghostty/Nord",
+    "sha256": "2e6664c01db6a651eb0d19123cff6f744997e3e3b7b0c2b6b8f7177138be50a4"
+  },
+  {
+    "name": "TokyoNight",
+    "url": "https://raw.githubusercontent.com/mbadolato/iTerm2-Color-Schemes/d3e95e4f7140c980988781f21534cf51e327af2c/ghostty/TokyoNight",
+    "sha256": "40836def07238c031f7661ece8c4c2b6fa925e7f8ac2c79f720844aac27340d8"
+  },
+  {
+    "name": "Catppuccin Mocha",
+    "url": "https://raw.githubusercontent.com/mbadolato/iTerm2-Color-Schemes/d3e95e4f7140c980988781f21534cf51e327af2c/ghostty/Catppuccin%20Mocha",
+    "sha256": "9a84ba97147259c7870415c021774c28db9af639c97f9d9045862b81734792ca"
+  },
+  {
+    "name": "Catppuccin Latte",
+    "url": "https://raw.githubusercontent.com/mbadolato/iTerm2-Color-Schemes/d3e95e4f7140c980988781f21534cf51e327af2c/ghostty/Catppuccin%20Latte",
+    "sha256": "de3e61fce3876b3513ef996743427d7ff16e7b7a217456d1568b0b0b1bcd1bdd"
+  },
+  {
+    "name": "Ubuntu Neo / Ubuntu Neo Light",
+    "source": "https://archive.ubuntu.com/ubuntu/pool/main/p/ptyxis/ptyxis_50.1-1ubuntu2.debian.tar.xz",
+    "archive_sha256": "b5253223a5c976af2760a4614ada7ce52be761ee000e8d84ecc1cfe57f24a1d5",
+    "patch": "debian/patches/ubuntu/color-palette.patch",
+    "note": "Ubuntu 26.04 Canonical Brand palette. ANSI, background, foreground and cursor preserved; selection colors chosen by Modernterm."
+  },
+  {
+    "name": "iTerm2 Solarized Dark",
+    "url": "https://raw.githubusercontent.com/mbadolato/iTerm2-Color-Schemes/d3e95e4f7140c980988781f21534cf51e327af2c/ghostty/iTerm2%20Solarized%20Dark",
+    "sha256": "9da77ad112701ac55101babbbbfdb7695cc6461ffefe9fa67224f7f9bee38dcb"
+  },
+  {
+    "name": "iTerm2 Solarized Light",
+    "url": "https://raw.githubusercontent.com/mbadolato/iTerm2-Color-Schemes/d3e95e4f7140c980988781f21534cf51e327af2c/ghostty/iTerm2%20Solarized%20Light",
+    "sha256": "5a374b2770f74abebb6593c5fdec1a18d1032035775484d32d88cbfafa9cfea9"
+  },
+  {
+    "name": "Gruvbox Dark",
+    "url": "https://raw.githubusercontent.com/mbadolato/iTerm2-Color-Schemes/d3e95e4f7140c980988781f21534cf51e327af2c/ghostty/Gruvbox%20Dark",
+    "sha256": "2f9ea0d3bc429e78f6cdb19cb1104f522bf187664f14922f3001ed7c0af54595"
+  },
+  {
+    "name": "Atom One Dark",
+    "url": "https://raw.githubusercontent.com/mbadolato/iTerm2-Color-Schemes/d3e95e4f7140c980988781f21534cf51e327af2c/ghostty/Atom%20One%20Dark",
+    "sha256": "46f57abfbe93bf63de492ed1167f08a79004c60818204cb77eb82ac691b1fb95"
+  },
+  {
+    "name": "Everforest Dark Hard",
+    "url": "https://raw.githubusercontent.com/mbadolato/iTerm2-Color-Schemes/d3e95e4f7140c980988781f21534cf51e327af2c/ghostty/Everforest%20Dark%20Hard",
+    "sha256": "d21fd3710cb3277231e7dd820938fd4c9a66f75bdc52d41ceff1a163e6c65fc4"
+  },
+  {
+    "name": "Rose Pine",
+    "url": "https://raw.githubusercontent.com/mbadolato/iTerm2-Color-Schemes/d3e95e4f7140c980988781f21534cf51e327af2c/ghostty/Rose%20Pine",
+    "sha256": "23075d6407b3e9f0dd2a7f9d67555deedc2e31805ddde34a03d6a66725f86197"
+  },
+  {
+    "name": "Kanagawa Wave",
+    "url": "https://raw.githubusercontent.com/mbadolato/iTerm2-Color-Schemes/d3e95e4f7140c980988781f21534cf51e327af2c/ghostty/Kanagawa%20Wave",
+    "sha256": "eca86ffb7a43cce33c74fdbeab8514d57f2cd1dbaef87ff727a72f8883e88305"
+  },
+  {
+    "name": "Nightfox",
+    "url": "https://raw.githubusercontent.com/mbadolato/iTerm2-Color-Schemes/d3e95e4f7140c980988781f21534cf51e327af2c/ghostty/Nightfox",
+    "sha256": "86da2844f0728bdbdef2e9522b1fc91e7db3616a1ceee6d8946e20a2bff0f0ae"
+  }
+]

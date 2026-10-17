@@ -1,11 +1,11 @@
 # Android 0.2.3 (5) — acceptance evidence
 
-Date: 2026-10-17, Europe/Copenhagen. Product sources are Kotlin/Compose Material 3 in android/. No iOS product sources or Xcode project were changed by this port.
+Started: 2026-10-17; final validation: 2026-10-18, Europe/Copenhagen. Product sources are Kotlin/Compose Material 3 in android/. No iOS product sources or Xcode project were changed by this port.
 
 ## Local results
 
-- Android 10 / API 29 ARM64 phone emulator, WebView 91: final local suite has 11 instrumented test methods and 6 JVM test methods, zero failures; lintDebug passes.
-- Android 16 / API 36 ARM64 tablet emulator, WebView 133: all 11 instrumented test methods passed, including large-screen navigation, IME and physical-display rotation. Android16 ignores application-requested orientation on large screens, so the test rotates the disposable emulator display and restores settings afterwards.
+- Android 10 / API 29 ARM64 phone emulator, WebView 91: final local suite has 12 instrumented test methods and 6 JVM test methods, zero failures; lintDebug passes.
+- Android 16 / API 36 ARM64 tablet emulator, WebView 133: all 12 instrumented test methods passed, including large-screen navigation, IME and physical-display rotation. Android16 ignores application-requested orientation on large screens, so the test rotates the disposable emulator display and restores settings afterwards.
 - Stock WebView compatibility: terminal bundle transpiled to Chrome 70 syntax. Cloud API29/WebView74 exposed missing ParentNode.replaceChildren; a DOM-only fallback was added. The local test explicitly removes the native method, verifies string arguments stay text nodes, and then exercises IME and VT alternate-screen rendering through the fallback.
 - Release APK: versionName 0.2.3, versionCode 5, minSdk29, targetSdk36, package com.modernterm.android. Fixed 3072-bit release signing identity, APK v2 signature verified. No debug flag, test fixtures or signing secrets in the APK.
 - APK installed and cold-launched on the API29 emulator. Zip alignment and all included ELF LOAD alignments support 16 KiB pages (static checks, not a physical 16 KiB device claim).
@@ -36,7 +36,8 @@ Date: 2026-10-17, Europe/Copenhagen. Product sources are Kotlin/Compose Material
 4. Landscape screenshot capture hit an Espresso double-idle wait. Removed the redundant idle wait from screenshot capture; actual orientation and content assertions retained.
 5. Local cloud-synced generated directories produced duplicate dex files; local build/cache moved outside Documents. CI uses normal generated paths.
 6. Hosted runners ran out of disk when the emulator requested its default ~7.4 GiB userdata partition after compilation. The workflow now frees unused disposable-runner toolchains and explicitly limits emulator userdata to 3 GiB. This was an environment boot failure, not a passed device test.
-7. Actions artifact quota exceeded. Upload failure is visible and isolated from build/test status; no unrelated artifacts deleted. Release attachment/local APK provides delivery.
+7. Reconnect after transport loss left a suspended old writer able to consume the first new keystroke. An end-to-end regression reproduced the missing first input; reconnect now retires the previous generation before starting a new writer, and the regression passes on both local API levels.
+8. Actions artifact quota exceeded. Upload failure is visible and isolated from build/test status; no unrelated artifacts deleted. Release attachment/local APK provides delivery.
 
 ## CI outcome
 
@@ -65,3 +66,5 @@ These screenshots contain explicitly labeled synthetic metrics, not user server 
 ![Android phone monitoring fixture](../../android/docs/screenshots/phone-monitor-fixture.png)
 
 ![Android 16 tablet landscape fixture](../../android/docs/screenshots/tablet-monitor-fixture.png)
+
+Release signer SHA-256: `5dcca3a86795783f10d3b44eaaa2f06ddc5ed6e4bfbbd6337df7edbf4e2e1c19`. APK SHA-256 is delivered in `SHA256SUMS.txt`; the APK is not committed into Git.
