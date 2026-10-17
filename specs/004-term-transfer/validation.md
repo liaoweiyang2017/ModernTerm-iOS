@@ -32,3 +32,9 @@ Date: 2026-10-18, Europe/Copenhagen. Version: iOS and Android **0.2.3 (6)**. Use
 - All production sharing/export files are encrypted; no plaintext temporary export. File passwords and recovered credentials necessarily exist briefly in process memory; managed runtime memory is not claimed to be perfectly zeroizable.
 - Tests and local logs contain only synthetic transfer data. Credentials/signing keys, test application APKs and actual SSH account archives are not release assets.
 - Android base CI already passed [39074704231](https://github.com/liaoweiyang2017/ModernTerm-iOS/actions/runs/39074704231); final feature run must pass separately.
+
+## Visual checks
+
+Reviewed [Android phone](screenshots/android-phone-import.png), [Android tablet](screenshots/android-tablet-import.png) and [iOS preview](screenshots/ios-import.png). All show synthetic test connections only. The iOS image predates the additional duplicate/conflict summary text, which is covered by the final native UI rerun.
+
+The first iOS cloud run passed the unit tests but failed native UI automation: its older runtime uppercases section headers, and the system export picker was no longer present after export. Tests now match section headings case-insensitively; the transfer view retains its FileDocument while a system picker is presented rather than clearing it on the underlying view disappearing. The local native file roundtrip passed again after this change; the new cloud run remains the verification gate.

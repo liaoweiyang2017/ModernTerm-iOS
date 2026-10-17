@@ -197,8 +197,12 @@ struct TermTransferScreen: View {
         }
       }
     }.onDisappear {
-      reset()
-      document = nil
+      // Older iOS versions also call this when presenting the system document picker.
+      // Its FileDocument must stay alive until the export completion callback.
+      if !exporting && !picking {
+        reset()
+        document = nil
+      }
     }
   }
   private func reset() {

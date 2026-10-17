@@ -17,7 +17,10 @@ final class TermTransferUITests: XCTestCase {
       app.buttons["Save"].tap()
     }
     app.buttons["SSH transfer"].tap()
-    XCTAssertTrue(app.staticTexts["Export saved SSH connections"].waitForExistence(timeout: 5))
+    XCTAssertTrue(
+      app.staticTexts.matching(
+        NSPredicate(format: "label ==[c] %@", "Export saved SSH connections")
+      ).firstMatch.waitForExistence(timeout: 5))
     app.buttons["Select all"].tap()
     let password = app.secureTextFields["File password (12+ characters)"]
     for _ in 0..<5 {
@@ -69,7 +72,8 @@ final class TermTransferUITests: XCTestCase {
     unlock.typeText("test-transfer-2026")
     app.buttons["Unlock and continue"].tap()
     XCTAssertTrue(
-      app.staticTexts["Import preview"].waitForExistence(timeout: 10), app.debugDescription)
+      app.staticTexts.matching(NSPredicate(format: "label ==[c] %@", "Import preview")).firstMatch
+        .waitForExistence(timeout: 10), app.debugDescription)
     let preview = XCTAttachment(screenshot: app.screenshot())
     preview.name = "iOS import preview"
     preview.lifetime = .keepAlways
