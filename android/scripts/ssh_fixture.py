@@ -2,6 +2,9 @@
 """Isolated SSH/SFTP fixture. Never uses real accounts, keys or credentials."""
 import base64,hashlib,json,os,pathlib,secrets,socket,subprocess,sys,tempfile,threading,time
 import paramiko
+import signal
+def stop_fixture(*args): raise KeyboardInterrupt
+signal.signal(signal.SIGTERM,stop_fixture)
 root=pathlib.Path(__file__).resolve().parents[1]
 assets=root/'app/src/androidTest/assets'
 assets.mkdir(parents=True,exist_ok=True)
@@ -18,7 +21,7 @@ for kind in ['rsa','ed25519']:
   path=base/name
   subprocess.run(['ssh-keygen','-q','-t',kind,'-N',passphrase if encrypted else '', '-f',str(path)],check=True)
   keys[name]=path.read_text();public.append(path.with_suffix('.pub').read_text().split()[1])
-remote=base/'remote';remote.mkdir()
+remote=(base/'remote').resolve();remote.mkdir()
 def local(path):
  p=(remote/path) if not path.startswith('/') else pathlib.Path(path)
  p=p.resolve()

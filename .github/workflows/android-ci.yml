@@ -24,6 +24,8 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
+      - name: Shared resource consistency
+        run: python3 android/scripts/sync_shared.py --check
       - name: Enable KVM
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
@@ -44,9 +46,16 @@ jobs:
           arch: x86_64
           profile: pixel_2
           disable-animations: true
-          script: cd android && ./gradlew --no-daemon lintDebug testDebugUnitTest assembleDebug connectedDebugAndroidTest
+          script: |
+            adb shell dumpsys webviewupdate
+            cd android && ./gradlew --no-daemon lintDebug testDebugUnitTest assembleDebug connectedDebugAndroidTest
+            mkdir -p android/app/build/reports/screenshots && adb pull /sdcard/Pictures/ModernTerm-tests android/app/build/reports/screenshots || true
+      - name: Test summary (available even when artifact storage is full)
+        if: always()
+        run: python3 android/scripts/report_results.py
       - name: Test reports and installable debug APK
         if: always()
+        continue-on-error: true
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: modernterm-android-api-${{ matrix.api }}

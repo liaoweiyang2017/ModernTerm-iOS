@@ -1,6 +1,6 @@
 # Specification: ModernTerm Android 0.2.3
 
-日期：2026-10-17。状态：Draft，待用户确认后开始大规模实现。
+日期：2026-10-17。状态：用户已确认，按风险验证→功能对齐→CI/发布推进。
 
 输入：基于现有 iOS 功能，在同一仓库新增 Kotlin Android 版本，体现 Material Design，支持 Android 10+，版本与 iOS 一致。用户没有安卓测试设备，潜在使用设备为 Mate 70，具体鸿蒙版本未知。
 
