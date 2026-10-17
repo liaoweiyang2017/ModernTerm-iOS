@@ -53,3 +53,24 @@ Not verified: physical device installation, password authentication against a li
 - Installed 0.2.2 into LiveContainer on iPhone 17, rebound its existing data container, and visually verified the original server list is retained.
 
 - Physical iPhone 17 / LiveContainer: user opened their SSH terminal; native iOS keyboard and the new keyboard button were visibly present, with the prompt above the keyboard. No commands were entered into that user server by the agent.
+
+
+## 0.2.3 RSA-SHA2 gateway compatibility (2026-10-17)
+
+- Reproduced the original NIOSSH error 1 as keyExchangeNegotiationFailure before authentication. The gateway offers RSA host signatures; the original client offered only Ed25519/ECDSA.
+- Added RSA-SHA2 host verification, matching negotiated signature names, without enabling SHA-1 host signatures. Invalid signatures, tampering and algorithm mismatch are rejected.
+- Fixed SFTP initialization hanging on CHANNEL_FAILURE without peer closure; only the rejected child channel closes.
+- Final complete suite: 27 tests, 26 passed, 1 opt-in external probe skipped, 0 failures. The real gateway handshake probe passed separately. Includes password login with @ username, wrong password, RSA user-key authentication, IPv4/IPv6 loopback, trust rejection, cancellation/reconnect, restricted channels and all prior regression tests.
+- Release arm64 build passed. Installed 0.2.3 (5) in the connected iPhone 17 / iOS 27.2 / LiveContainer 3.8.10, preserving the original data container.
+- The screenshot-2 session connected successfully three times on the physical phone; its shell executed a harmless printf and returned MT_OK. The screenshot-1 session also showed live monitoring and Connected. Host fingerprint was checked against the desktop known_hosts record before acceptance.
+- No credentials or test fixtures in the IPA. See specs/001-ssh-gateway-login/validation.md for the AC-01…08 evidence and limits.
+
+
+## Same-version theme and keyboard verification (2026-10-17)
+
+- Ubuntu Neo Auto baseline passes without product changes: dark → light → dark, then reattach in light appearance; foreground/background checked on the actual TerminalSurface UIViewRepresentable.
+- Phone initially selected fixed Ubuntu Neo Dark; Auto selection correctly turned the terminal light. User confirmed the theme was correct.
+- User confirmed the system text keyboard returned after quitting desktop Device Hub. This was an external keyboard/preview state issue, not a demonstrated terminal focus regression. Device Hub is exited after deployment.
+- Full regression: 28 tests, 27 passed, 1 opt-in external gateway probe skipped, 0 failures. Existing keyboard tests now also assert the default system inputView is nil. Release build passed, version unchanged at 0.2.3 (5).
+- App-owned staged whitespace checks pass; original upstream formatting is preserved in Vendor snapshots and excluded from that check.
+- See specs/002-theme-keyboard-validation for requirements, findings and deployment record.

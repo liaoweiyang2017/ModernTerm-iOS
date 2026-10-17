@@ -30,7 +30,7 @@ Subsystem sftp /usr/libexec/sftp-server
    hostkey=' '.join((p/'host.pub').read_text().split()[:2])
    fixture.write_text(json.dumps(dict(port=port,user=getpass.getuser(),key=(p/'client').read_text(),hostKey=hostkey,directory=str(remote))));fixture.chmod(0o600)
    subprocess.run(['/opt/homebrew/bin/xcodegen','generate'],cwd=root,check=True)
-   subprocess.run(['xcodebuild','-project','ModerntermIOS.xcodeproj','-scheme','ModerntermIOS','-destination',f'platform=iOS Simulator,id={simulator}','-derivedDataPath','build','CODE_SIGNING_ALLOWED=YES','CODE_SIGN_IDENTITY=-','test'],cwd=root,check=True)
+   subprocess.run(['xcodebuild','-project','ModerntermIOS.xcodeproj','-scheme','ModerntermIOS','-destination',f'platform=iOS Simulator,id={simulator}','-derivedDataPath',os.environ.get('MODERNTERM_DERIVED_DATA','build'),'CODE_SIGNING_ALLOWED=YES','CODE_SIGN_IDENTITY=-','test'],cwd=root,check=True)
   finally:
    server.terminate();server.wait(timeout=5)
    fixture.unlink(missing_ok=True)

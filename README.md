@@ -1,6 +1,6 @@
 # ModernTerm for iOS / iPadOS
 
-独立的原生 SwiftUI + UIKit SSH 客户端，沿用 Modernterm 的应用图标。AppKit 只适用于 macOS，因此移动端采用 UIKit 的 SwiftTerm 终端视图。当前版本 0.2.2，iOS / iPadOS 17+。
+独立的原生 SwiftUI + UIKit SSH 客户端，沿用 Modernterm 的应用图标。AppKit 只适用于 macOS，因此移动端采用 UIKit 的 SwiftTerm 终端视图。当前版本 0.2.3，iOS / iPadOS 17+。
 
 ## 功能
 
@@ -80,3 +80,17 @@ LiveContainer 部署使用正常 Release arm64 `.app` 的 `Payload` IPA；LiveCo
 终端加入 UIKit 窗口后再申请键盘焦点，切到 Terminal 自动唤起系统输入；右上角提供 Show keyboard，下方辅助按键栏提供收起按钮。监控刷新不会抢回已经收起的键盘，离开终端页时释放焦点。
 
 LiveContainer 更新时可能给替换应用创建新的空数据容器。更新前记录现有容器，更新后核对并重新选择原容器，不要删除原数据或重复导入。应用配置和 Keychain 的隔离标识都与容器有关。
+
+## 0.2.3 RSA-SHA2 网关兼容
+
+支持仅提供 RSA 主机密钥的网关，使用 rsa-sha2-256/512 校验主机签名，保持指纹固定验证；不启用 ssh-rsa/SHA-1 主机签名回退。用户名中的 @ 原样传递。连接失败显示协商、认证、网络或未知阶段，不再只显示 NIOSSH error 1。
+
+SFTP 子系统被拒绝时结束初始化并关闭该子通道，已有终端连接保持可用。依赖固定源码及局部补丁说明见 Vendor/README.md。
+
+额外测试命令：在隔离 Python venv 安装 `paramiko==4.0.0` 后执行 `python Scripts/password_integration.py`，同时运行原 OpenSSH 回归。可通过 `MODERNTERM_DERIVED_DATA` 指定复用构建目录。`python3 Scripts/gateway_probe.py HOST` 只做显式指定服务器的握手检查，主动拒绝主机验证且不发送凭据，不代表登录验收。
+
+### 自动主题与手机键盘
+
+`Ubuntu Neo (Auto)` 跟随应用有效浅色/深色外观；`Ubuntu Neo Dark` 和 `Ubuntu Neo Light` 为固定配色。若应用界面已变浅但终端仍深色，先核对 Terminal colors 是否选中 Auto。
+
+电脑 Device Hub 手机预览可能使系统进入外接键盘状态，即使 Capture Keyboard 已关闭，也可能仅显示辅助栏。若手机系统文字键盘不弹出，退出电脑端 Device Hub，再在手机终端点击右上角键盘按钮。本次真机对照由用户确认恢复；不需要改密码、重建会话或重装输入法。

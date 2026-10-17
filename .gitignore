@@ -13,3 +13,5 @@ Tests/Fixture.json
 build-device/
 
 ModernTerm-Mac-Import*.json
+Tests/PasswordFixture.json
+Tests/GatewayProbe.json

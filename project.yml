@@ -6,8 +6,8 @@ options:
 settings:
   base:
     SWIFT_VERSION: '5.0'
-    MARKETING_VERSION: 0.2.2
-    CURRENT_PROJECT_VERSION: 4
+    MARKETING_VERSION: 0.2.3
+    CURRENT_PROJECT_VERSION: 5
     GENERATE_INFOPLIST_FILE: YES
     CODE_SIGN_STYLE: Automatic
 packages:
@@ -15,11 +15,9 @@ packages:
     url: https://github.com/migueldeicaza/SwiftTerm
     exactVersion: 1.18.0
   Citadel:
-    url: https://github.com/orlandos-nl/Citadel
-    exactVersion: 0.12.1
+    path: Vendor/Citadel
   NIOSSH:
-    url: https://github.com/Wellz26/swift-nio-ssh
-    from: 0.3.4
+    path: Vendor/swift-nio-ssh
   NIO:
     url: https://github.com/apple/swift-nio
     from: 2.81.0
@@ -56,6 +54,8 @@ targets:
         product: NIOCore
       - package: Crypto
         product: Crypto
+      - package: Crypto
+        product: _CryptoExtras
   ModerntermTests:
     type: bundle.unit-test
     platform: iOS

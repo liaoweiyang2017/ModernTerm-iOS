@@ -26,6 +26,7 @@ import XCTest
       try await Task.sleep(nanoseconds: 50_000_000)
     }
     XCTAssertNotNil(session.terminal.window)
+    XCTAssertNil(session.terminal.inputView, "Normal terminal entry uses the iOS text keyboard")
     XCTAssertTrue(session.terminal.canBecomeFirstResponder)
     XCTAssertTrue(
       session.terminal.isFirstResponder,

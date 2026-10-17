@@ -136,7 +136,7 @@ struct RemoteFile: Identifiable, Hashable {
         }
         let ssh = try await SSHClient.connect(
           host: server.host, port: server.port, authenticationMethod: auth,
-          hostKeyValidator: .custom(validator), reconnect: .never, connectTimeout: .seconds(20))
+          hostKeyValidator: .custom(validator), reconnect: .never, algorithms: SSHCompatibility.algorithms, connectTimeout: .seconds(20))
         guard generation == token, !Task.isCancelled else {
           try? await ssh.close()
           return
@@ -155,7 +155,7 @@ struct RemoteFile: Identifiable, Hashable {
         if startTerminal { startShell() }
       } catch {
         if generation == token {
-          self.error = error.localizedDescription
+          self.error = connectionFailureMessage(error)
           await finish()
         }
       }
@@ -205,7 +205,7 @@ struct RemoteFile: Identifiable, Hashable {
       do {
         try Task.checkCancellation()
         try await writer.write(ByteBuffer(bytes: data))
-      } catch { self.error = error.localizedDescription }
+      } catch { self.error = connectionFailureMessage(error) }
     }
   }
   func resize(cols: Int, rows: Int) {
@@ -354,7 +354,7 @@ struct RemoteFile: Identifiable, Hashable {
           }
         }
       } catch {
-        if generation == token, !Task.isCancelled { self.error = error.localizedDescription }
+        if generation == token, !Task.isCancelled { self.error = connectionFailureMessage(error) }
       }
     }
   }

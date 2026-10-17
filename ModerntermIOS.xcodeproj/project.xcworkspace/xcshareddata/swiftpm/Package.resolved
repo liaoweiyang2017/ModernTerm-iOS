@@ -1,5 +1,4 @@
 {
-  "originHash" : "ed9184c8d6c2d1ff7044a4d6b341c965cff4289a1cdccbf9c93993229f22dac0",
   "pins" : [
     {
       "identity" : "bigint",
@@ -11,12 +10,12 @@
       }
     },
     {
-      "identity" : "citadel",
+      "identity" : "colorizeswift",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/orlandos-nl/Citadel",
+      "location" : "https://github.com/mtynior/ColorizeSwift.git",
       "state" : {
-        "revision" : "ae8562f895de06ccb86fdb1cbb65fd99c8976e12",
-        "version" : "0.12.1"
+        "revision" : "4e7daa138510b77a3cce9f6a31a116f8536347dd",
+        "version" : "1.7.0"
       }
     },
     {
@@ -83,15 +82,6 @@
       }
     },
     {
-      "identity" : "swift-nio-ssh",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/Wellz26/swift-nio-ssh",
-      "state" : {
-        "revision" : "d88989f3d3bb1dfb2a38ce4af598afbf7fc3095c",
-        "version" : "0.3.7"
-      }
-    },
-    {
       "identity" : "swift-system",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-system.git",
@@ -110,5 +100,5 @@
       }
     }
   ],
-  "version" : 3
+  "version" : 2
 }
