@@ -64,6 +64,15 @@ final class TermTransferUITests: XCTestCase {
     let file = app.staticTexts.matching(
       NSPredicate(format: "label CONTAINS 'ModernTerm-connections'")
     ).firstMatch
+    // A fresh iOS18 picker opens an empty Recents tab; browse the save destination.
+    if !file.waitForExistence(timeout: 2) {
+      let browse = app.buttons["Browse"].firstMatch
+      if browse.exists { browse.tap() }
+      if !file.waitForExistence(timeout: 2) {
+        let local = app.cells.containing(.staticText, identifier: "On My iPhone").firstMatch
+        if local.exists { local.tap() }
+      }
+    }
     XCTAssertTrue(file.waitForExistence(timeout: 5), app.debugDescription)
     file.tap()
     if app.buttons["Open"].exists { app.buttons["Open"].tap() }
