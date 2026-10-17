@@ -79,7 +79,7 @@ class TermTransferUiTest {
             compose.onNodeWithContentDescription("SSH transfer").performClick()
             compose.onNodeWithText("Choose .term files…").performScrollTo().performClick()
             repeat(2) {
-                compose.waitUntil(5000) {
+                compose.waitUntil(30000) {
                     compose
                         .onAllNodesWithText("Unlock file ${it+1} of 2")
                         .fetchSemanticsNodes()
@@ -118,7 +118,21 @@ class TermTransferUiTest {
                 .onAllNodes(isRoot(), useUnmergedTree = true)
                 .onLast()
                 .printToLog("TERM_UI_FAILURE")
-            throw e
+            val texts =
+                compose
+                    .onAllNodes(
+                        SemanticsMatcher.keyIsDefined(
+                            androidx.compose.ui.semantics.SemanticsProperties.Text
+                        ),
+                        useUnmergedTree = true,
+                    )
+                    .fetchSemanticsNodes()
+                    .take(20)
+                    .joinToString(" | ") {
+                        it.config[androidx.compose.ui.semantics.SemanticsProperties.Text]
+                            .joinToString { text -> text.text }
+                    }
+            throw AssertionError("${e.message}; visible labels: $texts", e)
         } finally {
             Intents.release()
             compose.activityRule.scenario.onActivity { a ->

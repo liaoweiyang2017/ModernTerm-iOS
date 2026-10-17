@@ -9,6 +9,11 @@ for location in ['test-results','outputs/androidTest-results']:
   for case in t.iter('testcase'):
    failure=case.find('failure')
    if failure is not None:lines.append(f"  - {case.get('name')}: {(failure.text or '')[:1400]}")
+for p in (root/'outputs/androidTest-results').rglob('logcat-*TermTransferTest-referenceUnicodeAndRandomRoundTrip.txt'):
+ for line in p.read_text(errors='replace').splitlines():
+  if 'TERM_KDF_AND_DECODE_MS=' in line:
+   value=line.split('TERM_KDF_AND_DECODE_MS=',1)[1].strip()
+   if value.isdigit():lines.append(f"- File KDF + decode: {value} ms")
 text='\n'.join(lines);print(text)
 if os.environ.get('GITHUB_STEP_SUMMARY'):
  with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as f:f.write(text+'\n')
