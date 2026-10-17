@@ -66,4 +66,53 @@ class WorkspacePolicyTest {
             else vm.store.trust(server.endpoint, previous)
         }
     }
+
+    @Test
+    fun reconnectAfterTransportLossDoesNotLoseFirstInput() {
+        val instrument = InstrumentationRegistry.getInstrumentation()
+        val context = instrument.targetContext
+        val f =
+            JSONObject(
+                instrument.context.assets.open("ssh-fixture.json").bufferedReader().readText()
+            )
+        val server =
+            Server(host = f.getString("host"), port = f.getInt("port"), user = f.getString("user"))
+        val vm = Workspace(context.applicationContext as Application)
+        vm.store.save(server, Credentials(password = f.getString("password")))
+        val previous = vm.store.pin(server.endpoint)
+        vm.store.trust(server.endpoint, f.getString("fingerprint"))
+        fun awaitCondition(check: () -> Boolean) {
+            val deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(15)
+            while (System.nanoTime() < deadline) {
+                var done = false
+                instrument.runOnMainSync { done = check() }
+                if (done) return
+                Thread.sleep(50)
+            }
+            fail("Session condition timed out")
+        }
+        try {
+            instrument.runOnMainSync { vm.open(server) }
+            awaitCondition { vm.sessions.first().connected }
+            instrument.runOnMainSync { vm.shell(vm.sessions.first()) }
+            awaitCondition { String(vm.sessions.first().terminalBytes).contains("READY") }
+            val s = vm.sessions.first()
+            s.connection!!
+                .close() // Simulate transport loss, without the explicit Disconnect UI action.
+            instrument.runOnMainSync {
+                s.connected = false
+                vm.connect(s)
+            }
+            awaitCondition { s.connected }
+            instrument.runOnMainSync { vm.shell(s) }
+            awaitCondition { String(s.terminalBytes).contains("READY") }
+            instrument.runOnMainSync { vm.send(s, "FIRST_RECONNECT_INPUT\n") }
+            awaitCondition { String(s.terminalBytes).contains("FIRST_RECONNECT_INPUT") }
+        } finally {
+            instrument.runOnMainSync { vm.sessions.toList().forEach(vm::close) }
+            vm.store.delete(server)
+            if (previous == null) vm.store.forgetPin(server.endpoint)
+            else vm.store.trust(server.endpoint, previous)
+        }
+    }
 }

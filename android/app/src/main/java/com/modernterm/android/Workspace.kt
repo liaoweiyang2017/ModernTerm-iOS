@@ -150,6 +150,9 @@ class Workspace(app: Application) : AndroidViewModel(app) {
 
     fun connect(session: ConnectionState) {
         if (session.connected || session.connecting) return
+        // A remote disconnect can leave a suspended writer; retire it before reusing the input
+        // queue.
+        disconnect(session)
         val token = UUID.randomUUID()
         session.generation = token
         session.connecting = true
