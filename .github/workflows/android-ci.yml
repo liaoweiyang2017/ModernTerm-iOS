@@ -26,6 +26,11 @@ jobs:
           java-version: '17'
           cache: gradle
           cache-dependency-path: 'android/**/*.gradle.kts'
+      - name: Reserve space for Android emulator
+        run: |
+          # Disposable runner only: these unrelated toolchains are not used by this workflow.
+          sudo rm -rf /usr/share/dotnet /opt/ghc
+          df -h /
       - name: Shared resource consistency
         run: python3 android/scripts/sync_shared.py --check
       - name: Compile and lint before booting emulator
@@ -51,6 +56,8 @@ jobs:
           profile: pixel_2
           ram-size: 2048M
           cores: 2
+          disk-size: 3G
+          emulator-boot-timeout: 300
           disable-animations: true
           script: |
             adb shell dumpsys webviewupdate

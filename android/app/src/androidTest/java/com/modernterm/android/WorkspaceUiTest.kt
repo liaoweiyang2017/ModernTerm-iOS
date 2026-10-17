@@ -189,17 +189,30 @@ class WorkspaceUiTest {
         }
         compose.onNodeWithText("fixture-host").assertIsDisplayed()
         capture("linux-monitor-fixture")
-        compose.activityRule.scenario.onActivity {
-            it.requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+        // Android 16 ignores app-requested orientation on large screens. Rotate the
+        // disposable emulator display instead, as a user would rotate the device.
+        val resolver = instrumentation.targetContext.contentResolver
+        val previousAuto =
+            android.provider.Settings.System.getInt(resolver, "accelerometer_rotation", 1)
+        val previousRotation = android.provider.Settings.System.getInt(resolver, "user_rotation", 0)
+        fun shell(command: String) {
+            android.os.ParcelFileDescriptor.AutoCloseInputStream(
+                    instrumentation.uiAutomation.executeShellCommand(command)
+                )
+                .use { it.readBytes() }
         }
-        compose.waitUntil(10000) {
-            compose.activity.resources.configuration.orientation ==
-                android.content.res.Configuration.ORIENTATION_LANDSCAPE
-        }
-        capture("landscape-monitor-fixture")
-        compose.activityRule.scenario.onActivity { a ->
-            a.workspace.close(state)
-            a.requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+        try {
+            shell("settings put system accelerometer_rotation 0")
+            shell("settings put system user_rotation 1")
+            compose.waitUntil(10000) {
+                compose.activity.resources.configuration.orientation ==
+                    android.content.res.Configuration.ORIENTATION_LANDSCAPE
+            }
+            capture("landscape-monitor-fixture")
+        } finally {
+            compose.activityRule.scenario.onActivity { a -> a.workspace.close(state) }
+            shell("settings put system user_rotation $previousRotation")
+            shell("settings put system accelerometer_rotation $previousAuto")
         }
     }
 }

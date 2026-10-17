@@ -55,3 +55,10 @@ Apache/BSD/MIT 路径适合作为保留闭源分发选项的工程候选，但�
 4. 选择并验证终端渲染路径，重点测试旧 WebView 或原生组件的中文 IME。
 5. 启用 Actions 后以实际运行结果确定矩阵成本、稳定性与执行时间；不能提前声称 CI 已通过。
 6. 明确签名和分发方案。测试 APK 与正式可持续升级签名分开记录；真实设备与鸿蒙兼容性保持待验证状态。
+
+
+## Implementation-era verification
+
+Android 16/API36 ignores app-requested orientation on displays with smallest width >=600dp. The application remains adaptive; tablet tests rotate the emulated device instead of forcing Activity orientation. [Android16 adaptive behavior](https://developer.android.com/about/versions/16/behavior-changes-16#large-screens)
+
+Stock API29 cloud images use WebView74, whereas the local ARM API29 image uses WebView91. This distinction mattered: modern JS syntax and ParentNode.replaceChildren required compatibility handling. Local API36 tablet tests use WebView133. See validation.md for observed results rather than inferring compatibility solely from minSdk.
