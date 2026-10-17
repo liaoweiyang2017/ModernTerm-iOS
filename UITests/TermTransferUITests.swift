@@ -45,7 +45,8 @@ final class TermTransferUITests: XCTestCase {
     }
     XCTAssertTrue(export.isEnabled)
     export.tap()
-    let save = app.buttons["Save"]
+    let save = app.buttons.matching(NSPredicate(format: "label == 'Save' OR label == 'Move'"))
+      .firstMatch
     XCTAssertTrue(save.waitForExistence(timeout: 10), app.debugDescription)
     let shot = XCTAttachment(screenshot: app.screenshot())
     shot.name = "iOS encrypted file exporter"
