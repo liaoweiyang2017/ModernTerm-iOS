@@ -16,6 +16,9 @@ class TerminalPane(
     private val directory: (String) -> Unit = {},
 ) : WebView(context) {
     private var loaded = false
+    val isReady: Boolean
+        get() = loaded
+
     var loadFailure: String? = null
         private set
 
@@ -23,6 +26,11 @@ class TerminalPane(
     var onReady: (() -> Unit)? = null
 
     init {
+        layoutParams =
+            android.view.ViewGroup.LayoutParams(
+                android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+                android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+            )
         settings.javaScriptEnabled = true
         settings.allowFileAccess = false
         settings.allowContentAccess = false
@@ -32,7 +40,11 @@ class TerminalPane(
         webChromeClient =
             object : WebChromeClient() {
                 override fun onConsoleMessage(message: ConsoleMessage): Boolean {
-                    if (message.messageLevel() == ConsoleMessage.MessageLevel.ERROR) {
+                    if (
+                        message.messageLevel() == ConsoleMessage.MessageLevel.ERROR &&
+                            loadFailure == null &&
+                            !message.message().contains("favicon")
+                    ) {
                         loadFailure =
                             "Renderer error at ${message.sourceId().substringAfterLast('/')}:${message.lineNumber()}: ${message.message().take(160)}"
                     }

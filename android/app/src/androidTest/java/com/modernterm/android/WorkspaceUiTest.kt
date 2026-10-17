@@ -15,6 +15,7 @@ class WorkspaceUiTest {
     @get:Rule val compose = createAndroidComposeRule<MainActivity>()
 
     private fun capture(name: String) {
+        Thread.sleep(500) // Allow Android window/IME transitions to reach the compositor.
         val instrumentation = InstrumentationRegistry.getInstrumentation()
         instrumentation.uiAutomation.takeScreenshot()?.let { image ->
             val context = instrumentation.targetContext
@@ -72,12 +73,57 @@ class WorkspaceUiTest {
                 }
             }
             compose.onNodeWithText("Connected").assertIsDisplayed()
+            if (f.optString("platform") == "linux") {
+                compose.waitUntil(15000) {
+                    compose.activity.workspace.sessions
+                        .first { it.server.id == server.id }
+                        .snapshot
+                        ?.memoryTotal != null
+                }
+                assertTrue(
+                    compose.activity.workspace.sessions
+                        .first { it.server.id == server.id }
+                        .snapshot!!
+                        .supported
+                )
+            }
             capture("monitor")
             compose.onNodeWithText("Terminal", useUnmergedTree = true).performClick()
             compose.waitUntil(10000) {
                 compose.activity.workspace.sessions.first { it.server.id == server.id }.shellStarted
             }
+            compose.waitUntil(10000) {
+                compose.activity.workspace.sessions
+                    .first { it.server.id == server.id }
+                    .terminal
+                    ?.isReady == true
+            }
             compose.onNodeWithText("Keyboard").assertIsDisplayed().performClick()
+            val screen = java.util.concurrent.atomic.AtomicReference("")
+            compose.waitUntil(10000) {
+                compose.activity.runOnUiThread {
+                    compose.activity.workspace.sessions
+                        .first { it.server.id == server.id }
+                        .terminal
+                        ?.evaluateJavascript(
+                            "JSON.stringify({text:term.buffer.active.getLine(0).translateToString(true),second:term.buffer.active.getLine(1).translateToString(true),height:document.body.clientHeight,cols:term.cols,rows:term.rows})"
+                        ) {
+                            screen.set(it)
+                        }
+                }
+                screen.get().contains("READY")
+            }
+            val render = JSONObject(org.json.JSONArray("[${screen.get()}]").getString(0))
+            assertTrue(
+                "Terminal viewport collapsed after IME opened: $render; native height=${compose.activity.workspace.sessions.first { it.server.id == server.id }.terminal?.height}",
+                render.getInt("height") > 80,
+            )
+            assertTrue(render.getInt("rows") >= 3)
+            assertEquals(
+                "Buffered server output must appear exactly once",
+                "",
+                render.getString("second"),
+            )
             capture("terminal-light")
             compose.activityRule.scenario.recreate()
             compose.waitForIdle()
@@ -113,5 +159,47 @@ class WorkspaceUiTest {
         compose.onNodeWithText("New server").assertIsDisplayed()
         compose.onNodeWithText("Host name or IP").assertIsDisplayed()
         capture("add-server")
+    }
+
+    @Test
+    fun linuxDashboardSupportsLandscape() {
+        val instrumentation = InstrumentationRegistry.getInstrumentation()
+        val fixtures =
+            JSONObject(
+                instrumentation.context.assets
+                    .open("metrics-fixtures.json")
+                    .bufferedReader()
+                    .readText()
+            )
+        val state =
+            ConnectionState(
+                Server(
+                    name = "UI fixture · simulated metrics",
+                    host = "fixture.invalid",
+                    user = "test",
+                )
+            )
+        state.connected = true
+        state.snapshot =
+            Metrics.parse(fixtures.getString("next"), Metrics.parse(fixtures.getString("initial")))
+        state.history = listOf(Metrics.parse(fixtures.getString("initial")), state.snapshot!!)
+        compose.activityRule.scenario.onActivity { a ->
+            a.workspace.sessions.add(state)
+            a.workspace.selected = state.server.id
+        }
+        compose.onNodeWithText("fixture-host").assertIsDisplayed()
+        capture("linux-monitor-fixture")
+        compose.activityRule.scenario.onActivity {
+            it.requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+        }
+        compose.waitUntil(10000) {
+            compose.activity.resources.configuration.orientation ==
+                android.content.res.Configuration.ORIENTATION_LANDSCAPE
+        }
+        capture("landscape-monitor-fixture")
+        compose.activityRule.scenario.onActivity { a ->
+            a.workspace.close(state)
+            a.requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+        }
     }
 }

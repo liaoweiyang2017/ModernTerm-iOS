@@ -44,7 +44,7 @@ class PlatformGateTest {
             }
             c.resize(100, 30)
             val dir = f.getString("directory")
-            val path = "$dir/android.txt"
+            val path = "$dir/android-${java.util.UUID.randomUUID()}.txt"
             c.upload("file 中文".byteInputStream(), path)
             assertEquals("file 中文", String(c.read(path)))
             c.save(path, c.read(path), "changed".toByteArray())
@@ -151,6 +151,48 @@ class PlatformGateTest {
                 assertTrue(terminal!!.hasFocus())
                 terminal!!.destroy()
             }
+        }
+    }
+
+    @Test
+    fun refusedSubsystemAndLegacyHostDoNotWeakenSecurity() {
+        val f = fixture()
+        val base = Server(host = f.getString("host"), port = 22223, user = f.getString("user"))
+        SshConnection().use { c ->
+            c.connect(base, Credentials(password = f.getString("password"))) {
+                it == f.getString("fingerprint")
+            }
+            val stream = c.openShell(80, 24)
+            val start = System.nanoTime()
+            try {
+                c.list(".")
+                fail("Rejected SFTP was accepted")
+            } catch (_: Exception) {}
+            assertTrue(
+                "SFTP rejection should finish within the transport timeout",
+                (System.nanoTime() - start) / 1e9 < 20,
+            )
+            assertTrue(c.connected)
+            c.send("STILL_CONNECTED\n".toByteArray())
+            val bytes = ByteArray(256)
+            val result = StringBuilder()
+            while (!result.contains("STILL_CONNECTED")) {
+                val n = stream.read(bytes)
+                assertTrue(n > 0)
+                result.append(String(bytes, 0, n))
+            }
+        }
+        SshConnection().use { c ->
+            try {
+                c.connect(
+                    base.copy(port = 22224),
+                    Credentials(password = f.getString("password")),
+                ) {
+                    true
+                }
+                fail("SHA-1 host signature fallback was enabled")
+            } catch (_: Exception) {}
+            assertFalse(c.connected)
         }
     }
 }

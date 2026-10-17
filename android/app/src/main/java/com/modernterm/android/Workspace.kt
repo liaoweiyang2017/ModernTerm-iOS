@@ -79,6 +79,7 @@ class Workspace(app: Application) : AndroidViewModel(app) {
         viewModelScope.launch {
             try {
                 withContext(Dispatchers.IO) { store.save(server, credentials) }
+                sessions.find { it.server.id == server.id }?.let { close(it) }
                 reload()
                 onSuccess()
             } catch (e: Exception) {
@@ -101,7 +102,10 @@ class Workspace(app: Application) : AndroidViewModel(app) {
         viewModelScope.launch {
             try {
                 val c = withContext(Dispatchers.IO) { store.credentials(server.id) }
-                save(server.copy(favorite = !server.favorite), c)
+                withContext(Dispatchers.IO) {
+                    store.save(server.copy(favorite = !server.favorite), c)
+                }
+                reload()
             } catch (e: Exception) {
                 message = connectionError(e)
             }
@@ -299,7 +303,7 @@ class Workspace(app: Application) : AndroidViewModel(app) {
                                                 combined.size,
                                             )
                                         else combined
-                                    session.terminal?.write(bytes)
+                                    session.terminal?.takeIf { it.isReady }?.write(bytes)
                                 }
                             }
                         }
@@ -435,7 +439,8 @@ class Workspace(app: Application) : AndroidViewModel(app) {
         }
 
     override fun onCleared() {
-        sessions.forEach { it.connection?.close() }
+        val connections = sessions.mapNotNull { it.connection }
+        CoroutineScope(Dispatchers.IO).launch { connections.forEach { it.close() } }
         trust.forEach { it.response.complete(false) }
         super.onCleared()
     }

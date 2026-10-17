@@ -61,11 +61,12 @@ fun ModernTermApp(vm: Workspace) {
         var query by remember { mutableStateOf("") }
         val selected = vm.sessions.find { it.server.id == vm.selected }
         BackHandler(selected != null) { vm.selected = null }
-        BoxWithConstraints(Modifier.fillMaxSize()) {
+        BoxWithConstraints(Modifier.fillMaxSize().statusBarsPadding()) {
             val wide = maxWidth >= 840.dp
             Scaffold(
                 topBar = {
                     TopAppBar(
+                        windowInsets = WindowInsets(0, 0, 0, 0),
                         title = {
                             Column {
                                 Text(selected?.server?.title ?: "ModernTerm", maxLines = 1)
@@ -620,7 +621,7 @@ private fun TerminalScreen(vm: Workspace, s: ConnectionState, dark: Boolean, mod
         )
         .forEachIndexed { i, key -> theme.put(key, ansi.getString(i)) }
     LaunchedEffect(s.connected) { if (s.connected) vm.shell(s) }
-    Column(modifier.imePadding()) {
+    Column(modifier) {
         Row(
             Modifier.horizontalScroll(rememberScrollState()),
             verticalAlignment = Alignment.CenterVertically,

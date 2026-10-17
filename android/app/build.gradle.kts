@@ -19,9 +19,20 @@ android {
     kotlinOptions { jvmTarget = "17" }
     packaging { resources.excludes += setOf("META-INF/DEPENDENCIES", "META-INF/INDEX.LIST", "META-INF/versions/9/OSGI-INF/MANIFEST.MF") }
     testOptions { unitTests.isReturnDefaultValues = true; animationsDisabled = true }
+    signingConfigs {
+        create("release") {
+            System.getenv("MT_STORE_FILE")?.let { storeFile = file(it) }
+            storePassword = System.getenv("MT_STORE_PASSWORD")
+            keyAlias = System.getenv("MT_KEY_ALIAS") ?: "modernterm"
+            keyPassword = System.getenv("MT_STORE_PASSWORD")
+        }
+    }
     buildTypes {
         debug { applicationIdSuffix = ".debug" }
-        release { isMinifyEnabled = false }
+        release {
+            isMinifyEnabled = false
+            if (System.getenv("MT_STORE_FILE") != null) signingConfig = signingConfigs.getByName("release")
+        }
     }
 }
 dependencies {
@@ -34,8 +45,8 @@ dependencies {
     implementation("androidx.webkit:webkit:1.13.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2")
     implementation("com.hierynomus:sshj:0.41.2")
-    implementation("org.bouncycastle:bcprov-jdk18on:1.80")
-    implementation("org.bouncycastle:bcpkix-jdk18on:1.80")
+    implementation("org.bouncycastle:bcprov-jdk18on:1.84")
+    implementation("org.bouncycastle:bcpkix-jdk18on:1.84")
     implementation("org.slf4j:slf4j-nop:2.0.17")
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.json:json:20250107")

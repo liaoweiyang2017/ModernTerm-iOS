@@ -92,9 +92,11 @@ class SshConnection : Closeable {
 
     @Synchronized
     fun openShell(cols: Int, rows: Int): InputStream {
-        shell?.let {
-            return it.inputStream
-        }
+        shell
+            ?.takeIf { it.isOpen }
+            ?.let {
+                return it.inputStream
+            }
         val session = requireClient().startSession()
         try {
             session.allocatePTY(
