@@ -8,6 +8,44 @@ import org.junit.Test
 
 class StoreTest {
     @Test
+    fun backupOnlyFilesSurviveInterruptedAtomicWrites() {
+        val base = InstrumentationRegistry.getInstrumentation().targetContext
+        val folder =
+            java.io.File(base.cacheDir, "backup-store-${java.util.UUID.randomUUID()}").apply {
+                mkdirs()
+            }
+        val wrapped =
+            object : android.content.ContextWrapper(base) {
+                override fun getFilesDir() = folder
+
+                override fun getNoBackupFilesDir() =
+                    java.io.File(folder, "no-backup").apply { mkdirs() }
+            }
+        val server = Server(host = "backup.invalid", user = "test")
+        val secret = Credentials(password = "synthetic-backup-secret")
+        try {
+            LocalStore(wrapped).save(server, secret)
+            val config = java.io.File(folder, "configuration.json")
+            val credential = java.io.File(wrapped.noBackupFilesDir, "credentials/${server.id}.bin")
+            assertTrue(config.renameTo(java.io.File(config.path + ".bak")))
+            assertTrue(credential.renameTo(java.io.File(credential.path + ".bak")))
+            val journal = java.io.File(wrapped.noBackupFilesDir, "term-import-journal.json.bak")
+            journal.writeText(JSONArray(listOf(server.id)).toString())
+            val recovered = LocalStore(wrapped)
+            assertNull(recovered.loadError)
+            assertEquals(listOf(server), recovered.servers())
+            assertEquals(secret, recovered.credentials(server.id))
+            assertFalse(journal.exists())
+            recovered.savePreferences(Preferences(appearance = "dark"))
+            val reopened = LocalStore(wrapped)
+            assertEquals(listOf(server), reopened.servers())
+            assertEquals(secret, reopened.credentials(server.id))
+        } finally {
+            folder.deleteRecursively()
+        }
+    }
+
+    @Test
     fun keystoreRoundtripAndMigrationAreIdempotent() {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val store = LocalStore(context)

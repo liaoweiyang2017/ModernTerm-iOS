@@ -75,7 +75,7 @@ class LocalStore(private val context: Context) {
         private set
 
     init {
-        if (config.baseFile.exists())
+        if (atomicExists(config.baseFile))
             try {
                 root = JSONObject(String(config.readFully()))
                 servers()
@@ -171,7 +171,8 @@ class LocalStore(private val context: Context) {
     fun save(server: Server, credentials: Credentials) {
         server.validate()
         check(loadError == null) { loadError!! }
-        val old = secretFile(server.id).takeIf { it.exists() }?.readBytes()
+        val old =
+            secretFile(server.id).takeIf { atomicExists(it) }?.let { AtomicFile(it).readFully() }
         writeCredentials(server.id, credentials)
         try {
             val values = servers().toMutableList()
@@ -179,7 +180,7 @@ class LocalStore(private val context: Context) {
             if (index < 0) values.add(server) else values[index] = server
             mutate { it.put("servers", JSONArray(values.map { s -> s.json() })) }
         } catch (e: Exception) {
-            if (old == null) secretFile(server.id).delete()
+            if (old == null) AtomicFile(secretFile(server.id)).delete()
             else atomicWrite(secretFile(server.id), old)
             throw e
         }
@@ -193,7 +194,7 @@ class LocalStore(private val context: Context) {
                 JSONArray(servers().filter { s -> s.id != server.id }.map { s -> s.json() }),
             )
         }
-        secretFile(server.id).delete()
+        AtomicFile(secretFile(server.id)).delete()
     }
 
     private fun secretFile(id: String) = File(secretDir, UUID.fromString(id).toString() + ".bin")
@@ -230,9 +231,9 @@ class LocalStore(private val context: Context) {
     @Synchronized
     fun credentials(id: String): Credentials {
         val file = secretFile(id)
-        if (!file.exists()) return Credentials()
+        if (!atomicExists(file)) return Credentials()
         try {
-            val bytes = file.readBytes()
+            val bytes = AtomicFile(file).readFully()
             require(bytes.size >= 28)
             val cipher = Cipher.getInstance("AES/GCM/NoPadding")
             cipher.init(Cipher.DECRYPT_MODE, key(), GCMParameterSpec(128, bytes.copyOfRange(0, 12)))
@@ -279,7 +280,7 @@ class LocalStore(private val context: Context) {
                 )
             }
         } catch (e: Exception) {
-            additions.forEach { secretFile(it.first.id).delete() }
+            additions.forEach { AtomicFile(secretFile(it.first.id)).delete() }
             throw e
         }
         return ImportResult(additions.size, entries.size - additions.size)
@@ -288,8 +289,10 @@ class LocalStore(private val context: Context) {
     internal var transferCheckpoint: ((String) -> Unit)? = null
 
     private fun recoverTransfer() {
-        if (!transferJournal.exists()) return
-        require(transferJournal.length() <= 10000)
+        if (!atomicExists(transferJournal)) return
+        require(
+            maxOf(transferJournal.length(), File(transferJournal.path + ".bak").length()) <= 10000
+        )
         val ids = JSONArray(AtomicFile(transferJournal).readFully().toString(Charsets.UTF_8))
         require(ids.length() <= 200)
         val committed = servers().map { it.id }.toSet()
@@ -297,10 +300,14 @@ class LocalStore(private val context: Context) {
             val id = UUID.fromString(ids.getString(i)).toString()
             if (id !in committed) {
                 val f = secretFile(id)
-                check(!f.exists() || f.delete()) { "Could not recover credentials." }
+                AtomicFile(f).delete()
+                check(!atomicExists(f) && !File(f.path + ".new").exists()) {
+                    "Could not recover credentials."
+                }
             }
         }
-        check(transferJournal.delete()) { "Could not clean import journal." }
+        AtomicFile(transferJournal).delete()
+        check(!atomicExists(transferJournal)) { "Could not clean import journal." }
     }
 
     @Synchronized
@@ -351,6 +358,9 @@ class LocalStore(private val context: Context) {
         atomicWrite(config.baseFile, copy.toString().toByteArray())
         root = copy
     }
+
+    // API29 can leave only .bak after interruption; let AtomicFile restore it.
+    private fun atomicExists(file: File) = file.exists() || File(file.path + ".bak").exists()
 
     private fun atomicWrite(file: File, bytes: ByteArray) {
         val atomic = AtomicFile(file)
