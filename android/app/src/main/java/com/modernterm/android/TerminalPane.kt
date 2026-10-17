@@ -26,9 +26,9 @@ class TerminalPane(context: Context, private val input: (String)->Unit, private 
                 loader.shouldInterceptRequest(request.url) ?: WebResourceResponse("text/plain","UTF-8",403,"Blocked",emptyMap(),ByteArray(0).inputStream())
         }
         addJavascriptInterface(object {
-            @JavascriptInterface fun input(value: String) { if (value.length <= 65536) input(value) }
+            @JavascriptInterface fun input(value: String) { if (value.length <= 65536) this@TerminalPane.input(value) }
             @JavascriptInterface fun resize(cols: Int, rows: Int) { if(cols in 1..1000 && rows in 1..1000) resized(cols, rows) }
-            @JavascriptInterface fun directory(value: String) { if(value.length <= 4096) directory(value) }
+            @JavascriptInterface fun directory(value: String) { if(value.length <= 4096) this@TerminalPane.directory(value) }
             @JavascriptInterface fun ready() { post { loaded=true; write(pending.toByteArray());pending.reset();onReady?.invoke() } }
         }, "Bridge")
         loadUrl("https://appassets.androidplatform.net/assets/terminal/index.html")

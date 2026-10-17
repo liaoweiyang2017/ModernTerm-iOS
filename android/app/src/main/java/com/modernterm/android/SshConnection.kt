@@ -48,7 +48,10 @@ class SshConnection : Closeable {
         val ssh = SSHClient(config)
         client = ssh
         ssh.connectTimeout = 15_000; ssh.timeout = 15_000
-        ssh.addHostKeyVerifier { _, _, key -> verifier(fingerprint(key)) }
+        ssh.addHostKeyVerifier(object : net.schmizz.sshj.transport.verification.HostKeyVerifier {
+            override fun verify(hostname: String, port: Int, key: PublicKey) = verifier(fingerprint(key))
+            override fun findExistingAlgorithms(hostname: String, port: Int): List<String> = emptyList()
+        })
         try {
             ssh.connect(server.host, server.port)
             if (server.keyLogin) {

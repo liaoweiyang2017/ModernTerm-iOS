@@ -89,7 +89,7 @@ def serve(client):
  t.add_server_key(key);t.set_subsystem_handler('sftp',paramiko.SFTPServer,Files)
  try:t.start_server(server=Server())
  except Exception:t.close()
-listener=socket.socket();listener.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEADDR,1);listener.bind(('0.0.0.0',22222));listener.listen()
+listener=socket.socket();listener.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEADDR,1);listener.bind(('127.0.0.1',22222));listener.listen()
 with fixture.open('x') as f:
  os.chmod(fixture,0o600)
  json.dump(dict(host=os.environ.get('FIXTURE_HOST','10.0.2.2'),port=22222,user=username,password=password,passphrase=passphrase,keys=keys,directory=str(remote),fingerprint='SHA256:'+base64.b64encode(hashlib.sha256(key.asbytes()).digest()).decode().rstrip('=')),f)
