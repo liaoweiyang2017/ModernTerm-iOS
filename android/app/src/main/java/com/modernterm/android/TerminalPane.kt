@@ -16,6 +16,7 @@ class TerminalPane(
     private val directory: (String) -> Unit = {},
 ) : WebView(context) {
     private var loaded = false
+    private var disposed = false
     val isReady: Boolean
         get() = loaded
 
@@ -94,6 +95,7 @@ class TerminalPane(
                 @JavascriptInterface
                 fun ready() {
                     post {
+                        if (disposed) return@post
                         loaded = true
                         write(pending.toByteArray())
                         pending.reset()
@@ -135,7 +137,33 @@ class TerminalPane(
         clearFocus()
     }
 
+    fun copyAll() {
+        evaluateJavascript(
+            "(()=>{term.selectAll();const text=term.getSelection();term.clearSelection();return text})()"
+        ) { value ->
+            runCatching {
+                val text = org.json.JSONArray("[$value]").getString(0)
+                val clipboard =
+                    context.getSystemService(Context.CLIPBOARD_SERVICE)
+                        as android.content.ClipboardManager
+                clipboard.setPrimaryClip(
+                    android.content.ClipData.newPlainText("Terminal output", text)
+                )
+            }
+        }
+    }
+
+    fun pasteClipboard() {
+        val clipboard =
+            context.getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+        val text = clipboard.primaryClip?.getItemAt(0)?.coerceToText(context)?.toString() ?: return
+        if (text.length <= 65536) evaluateJavascript("term.paste(${JSONObject.quote(text)})", null)
+    }
+
     override fun destroy() {
+        disposed = true
+        onReady = null
+        pending.reset()
         removeJavascriptInterface("Bridge")
         super.destroy()
     }

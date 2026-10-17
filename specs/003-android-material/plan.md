@@ -1,6 +1,6 @@
 # Implementation Plan: Kotlin / Material3
 
-状态：待确认。关联 spec.md 与 research.md。初始仓库基线 698cba9；本机未发现可用JDK或Android SDK，仓库Actions当前disabled。
+状态：已确认，实施中。关联 spec.md 与 research.md。初始仓库基线 698cba9；本机未发现可用JDK或Android SDK，仓库Actions当前disabled。
 
 ## 技术选择
 
@@ -37,4 +37,14 @@ specs/003-android-material/：本规范、调研、计划、任务、验收。
 
 ## 实施顺序与门槛
 
-先验证SSH算法、终端IME及API29三个最高风险点，再完成UI和功能对齐。各里程碑产物明确标为阶段版；最终必须对A01…A12逐项给出通过/未验证/不适用及证据。功能缺失不能仅以“首版”理由宣布全部完成。用户确认前本轮只写文档，不启用CI、不安装工具、不编写产品主体。
+先验证SSH算法、终端IME及API29三个最高风险点，再完成UI和功能对齐。各里程碑产物明确标为阶段版；最终必须对A01…A12逐项给出通过/未验证/不适用及证据。功能缺失不能仅以“首版”理由宣布全部完成。用户于本轮明确确认实施；已建立Android工程、工具链、受控服务和CI，按实际运行结果逐项记录。
+
+
+## 实施收敛与偏差记录
+
+- 实际锁定 AGP 8.10.1 / Gradle 8.11.1 / Kotlin 2.1.20 / Compose BOM 2025.05.01 / SSHJ 0.41.2 / BC 1.84；BC版本与SSHJ传递依赖保持一致。
+- Android10本机ARM模拟器WebView91的SSH、加密私钥、IME、SFTP与UI均通过；云端API29镜像WebView74暴露额外兼容问题，终端脚本已降为Chrome70语法，继续以该环境的真实结果验收。
+- AndroidView中的WebView需显式MATCH_PARENT布局。设备截图/DOM高度断言复现了键盘出现后零高度，已修正；另修正初始化缓冲与会话重放重复显示同一输出。
+- 云端Actions artifact账户额度耗尽，不能上传测试附件。保留失败可见的构建/测试步骤，附加JUnit摘要到日志/step summary，附件上传单独标记失败；APK用本地文件与私有仓库Release附件交付，不删除无关项目数据。
+- 已生成固定专用Release签名，私钥/口令仅在本机私有目录和GitHub加密Secrets，仓库只有使用说明。
+- 本机同步目录产生重复生成dex文件，已将本地build和project cache迁到普通cache目录；CI保持标准目录。不是修改产品代码规避编译错误。

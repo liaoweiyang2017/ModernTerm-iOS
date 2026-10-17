@@ -132,6 +132,28 @@ class PlatformGateTest {
             }
             val loaded = ready.await(20, TimeUnit.SECONDS)
             assertTrue("Offline terminal failed to load: ${terminal?.loadFailure}", loaded)
+            val compat =
+                InstrumentationRegistry.getInstrumentation()
+                    .targetContext
+                    .assets
+                    .open("terminal/compat.js")
+                    .bufferedReader()
+                    .readText()
+            val compatChecked = CountDownLatch(1)
+            val compatResult = java.util.concurrent.atomic.AtomicReference("")
+            scenario.onActivity {
+                terminal!!.evaluateJavascript(
+                    "delete Element.prototype.replaceChildren;" +
+                        compat +
+                        ";(()=>{const parent=document.createElement('div');const child=document.createElement('span');child.textContent='node';parent.appendChild(child);parent.replaceChildren('<safe>',child);return parent.textContent+':'+parent.childNodes.length})()"
+                ) {
+                    compatResult.set(it)
+                    compatChecked.countDown()
+                }
+            }
+            assertTrue(compatChecked.await(5, TimeUnit.SECONDS))
+            assertEquals("<safe>node:2", org.json.JSONArray("[${compatResult.get()}]").getString(0))
+
             Thread.sleep(500)
             scenario.onActivity {
                 val connection = terminal!!.onCreateInputConnection(EditorInfo())
@@ -145,6 +167,25 @@ class PlatformGateTest {
                 input.await(10, TimeUnit.SECONDS),
             )
             synchronized(received) { assertEquals("中文", received.toString()) }
+            val rendered = java.util.concurrent.atomic.AtomicReference("")
+            scenario.onActivity {
+                terminal!!.write(
+                    "\u001b[?1049h\u001b[2J\u001b[H\u001b[31mVT_OK\u001b[0m".toByteArray()
+                )
+            }
+            Thread.sleep(300)
+            val checked = CountDownLatch(1)
+            scenario.onActivity {
+                terminal!!.evaluateJavascript(
+                    "term.buffer.active.type+':'+term.buffer.active.getLine(0).translateToString(true)"
+                ) {
+                    rendered.set(it)
+                    checked.countDown()
+                }
+            }
+            assertTrue(checked.await(5, TimeUnit.SECONDS))
+            assertTrue(rendered.get().contains("alternate:VT_OK"))
+
             scenario.onActivity {
                 terminal!!.hideKeyboard()
                 terminal!!.showKeyboard()

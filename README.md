@@ -1,8 +1,14 @@
-# ModernTerm for iOS / iPadOS
+# ModernTerm — iOS / iPadOS / Android
 
 独立的原生 SwiftUI + UIKit SSH 客户端，沿用 Modernterm 的应用图标。AppKit 只适用于 macOS，因此移动端采用 UIKit 的 SwiftTerm 终端视图。当前版本 0.2.3，iOS / iPadOS 17+。
 
-## 功能
+## 平台入口
+
+- iOS / iPadOS：仓库根目录 `ModerntermIOS.xcodeproj`，下文保留原iOS说明。
+- Android：独立 Kotlin / Compose Material 3 工程 [android/](android/README.md)，Android 10+，版本 0.2.3 (5)。
+- Android规范与逐项验收：[specs/003-android-material/](specs/003-android-material/spec.md)。
+
+## iOS 功能
 
 - SSH 交互终端、最多 8 个会话、服务器收藏/编辑/分组信息。
 - 密码和 OpenSSH Ed25519 / RSA 私钥登录（支持私钥口令）；凭据使用 iOS Keychain `WhenUnlockedThisDeviceOnly`，正常读取不弹授权，不同步 iCloud。
@@ -45,7 +51,7 @@ SwiftTerm 固定为 1.18.0；1.20.0 的构建信息插件在本机 Xcode 的 iOS
 
 `ModerntermTests` 验证会话校验、密码与配置分离、Keychain 读写、路径引用和配色。`Scripts/integration.py` 创建临时本机 OpenSSH 服务和一次性密钥，在模拟器验证 SSH/SFTP；不读取用户服务器、SSH 配置或密钥。
 
-代码只备份到私有 GitHub 项目；没有 GitHub Actions。生成目录、测试临时密钥和用户凭据不进入 Git。
+代码保存在私有 GitHub 项目；Android 使用专用 GitHub Actions，iOS 保留本机验证流程。生成目录、测试临时密钥和用户凭据不进入 Git。
 
 第三方依赖：SwiftTerm（MIT）、Citadel（MIT）、SwiftNIO/NIOSSH/Crypto（Apache 2.0）、终端配色及对应来源。详见 `Resources/ThirdParty.txt` 和 `Resources/PaletteProvenance.json`。应用自有代码暂保留所有权利，不提供公共开源许可。
 

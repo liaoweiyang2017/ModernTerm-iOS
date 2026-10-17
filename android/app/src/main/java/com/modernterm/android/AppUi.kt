@@ -41,6 +41,18 @@ fun ModernTermApp(vm: Workspace) {
             else -> systemDark
         }
     val context = LocalContext.current
+    SideEffect {
+        (context as? android.app.Activity)?.let { activity ->
+            androidx.core.view.WindowCompat.getInsetsController(
+                    activity.window,
+                    activity.window.decorView,
+                )
+                .apply {
+                    isAppearanceLightStatusBars = !dark
+                    isAppearanceLightNavigationBars = !dark
+                }
+        }
+    }
     val colors =
         if (vm.preferences.dynamicColor && Build.VERSION.SDK_INT >= 31) {
             if (dark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
@@ -162,7 +174,9 @@ fun ModernTermApp(vm: Workspace) {
                                     Modifier.fillMaxSize(),
                                 )
                             }
-                        SessionContent(vm, selected, dark, Modifier.weight(1f))
+                        key(selected.server.id) {
+                            SessionContent(vm, selected, dark, Modifier.weight(1f))
+                        }
                     } else
                         when (section) {
                             0 ->
@@ -628,6 +642,10 @@ private fun TerminalScreen(vm: Workspace, s: ConnectionState, dark: Boolean, mod
         ) {
             TextButton(onClick = { s.terminal?.showKeyboard() }) { Text("Keyboard") }
             TextButton(onClick = { s.terminal?.hideKeyboard() }) { Text("Hide") }
+            TextButton(onClick = { s.terminal?.copyAll() }) { Text("Copy all") }
+            TextButton(onClick = { s.terminal?.pasteClipboard() }, enabled = s.connected) {
+                Text("Paste")
+            }
             listOf(
                     "Esc" to "\u001b",
                     "Tab" to "\t",
@@ -697,6 +715,7 @@ private fun SettingsScreen(vm: Workspace, modifier: Modifier) {
     var newName by remember { mutableStateOf("") }
     var newCommand by remember { mutableStateOf("") }
     var forget by remember { mutableStateOf<Server?>(null) }
+    var showLicenses by remember { mutableStateOf(false) }
     val picker =
         rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
             vm.externalFileFlow = false
@@ -831,11 +850,25 @@ private fun SettingsScreen(vm: Workspace, modifier: Modifier) {
         item {
             HorizontalDivider()
             Text("ModernTerm 0.2.3 · Android", style = MaterialTheme.typography.titleMedium)
+            TextButton(onClick = { showLicenses = true }) { Text("Open-source notices") }
             Text(
                 "Android 10+ · No Google services required\nConnections close when you leave the app. No permanent background sessions.\nHarmonyOS / Mate 70: not verified on a physical device.",
                 style = MaterialTheme.typography.bodySmall,
             )
         }
+    }
+    if (showLicenses) {
+        val notice = remember {
+            context.assets.open("licenses/NOTICE.txt").bufferedReader().use { it.readText() }
+        }
+        AlertDialog(
+            onDismissRequest = { showLicenses = false },
+            title = { Text("Open-source notices") },
+            text = {
+                Text(notice, Modifier.heightIn(max = 400.dp).verticalScroll(rememberScrollState()))
+            },
+            confirmButton = { TextButton(onClick = { showLicenses = false }) { Text("Close") } },
+        )
     }
     forget?.let { server ->
         AlertDialog(

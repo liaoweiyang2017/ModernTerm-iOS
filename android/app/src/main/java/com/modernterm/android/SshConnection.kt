@@ -65,7 +65,7 @@ class SshConnection : Closeable {
         val ssh = SSHClient(config)
         client = ssh
         ssh.connectTimeout = 15_000
-        ssh.timeout = 15_000
+        ssh.timeout = 75_000 // Allow the explicit fingerprint prompt to complete.
         ssh.addHostKeyVerifier(
             object : net.schmizz.sshj.transport.verification.HostKeyVerifier {
                 override fun verify(hostname: String, port: Int, key: PublicKey) =
@@ -84,6 +84,7 @@ class SshConnection : Closeable {
                         ?.let { PasswordUtils.createOneOff(it.toCharArray()) }
                 ssh.authPublickey(server.user, ssh.loadKeys(credentials.privateKey, null, finder))
             } else ssh.authPassword(server.user, credentials.password)
+            ssh.timeout = 15_000
         } catch (e: Exception) {
             close()
             throw e

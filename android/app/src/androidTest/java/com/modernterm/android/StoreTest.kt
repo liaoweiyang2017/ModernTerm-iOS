@@ -54,4 +54,34 @@ class StoreTest {
             store.delete(server)
         }
     }
+
+    @Test
+    fun corruptConfigurationIsPreservedAndCannotBeOverwritten() {
+        val base = InstrumentationRegistry.getInstrumentation().targetContext
+        val folder =
+            java.io.File(base.cacheDir, "invalid-store-${java.util.UUID.randomUUID()}").apply {
+                mkdirs()
+            }
+        val wrapped =
+            object : android.content.ContextWrapper(base) {
+                override fun getFilesDir() = folder
+
+                override fun getNoBackupFilesDir() =
+                    java.io.File(folder, "no-backup").apply { mkdirs() }
+            }
+        val file = java.io.File(folder, "configuration.json")
+        val original = "{\"servers\":[{\"id\":\"not-a-uuid\"}]}"
+        file.writeText(original)
+        try {
+            val store = LocalStore(wrapped)
+            assertNotNull(store.loadError)
+            try {
+                store.savePreferences(Preferences(appearance = "dark"))
+                fail("Corrupt data was overwritten")
+            } catch (_: IllegalStateException) {}
+            assertEquals(original, file.readText())
+        } finally {
+            folder.deleteRecursively()
+        }
+    }
 }

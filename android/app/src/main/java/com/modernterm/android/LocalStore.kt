@@ -75,6 +75,9 @@ class LocalStore(private val context: Context) {
         if (config.baseFile.exists())
             try {
                 root = JSONObject(String(config.readFully()))
+                servers()
+                preferences()
+                macros()
             } catch (_: Exception) {
                 loadError =
                     "Saved configuration could not be read. It has been preserved; no changes will overwrite it."
