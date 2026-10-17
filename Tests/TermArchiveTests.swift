@@ -24,6 +24,23 @@ final class TermArchiveTests: XCTestCase {
       try TermArchive.decode(a, password: password.decomposedStringWithCanonicalMapping), entries)
     try a.write(to: URL.documentsDirectory.appendingPathComponent("ios-export.term"))
   }
+  func testExportBoundsCredentialReadsAndOmitsSecretsByDefault() throws {
+    let servers = (0..<40).map { _ in Server(host: "limit.invalid", user: "test") }
+    let key = String(repeating: "x", count: 1024 * 1024)
+    var reads = 0
+    XCTAssertThrowsError(
+      try TermArchive.collect(servers, includeCredentials: true) { _ in
+        reads += 1
+        return Credentials(privateKey: key)
+      })
+    XCTAssertGreaterThanOrEqual(reads, 15)
+    XCTAssertLessThanOrEqual(reads, 17)
+    let entries = try TermArchive.collect(servers, includeCredentials: false) { _ in
+      throw AppError.message("Must not read credentials for configuration-only export")
+    }
+    XCTAssertEqual(entries.count, 40)
+    XCTAssertTrue(entries.allSatisfy { $0.credentials == nil })
+  }
   func testRejectsWrongPasswordTamperingLengthsAndVersion() throws {
     let data = try fixture()
     XCTAssertThrowsError(try TermArchive.decode(data, password: "wrong-password-123"))

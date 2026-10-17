@@ -222,9 +222,9 @@ struct TermTransferScreen: View {
   }
   private func export() {
     do {
-      let entries = try store.servers.filter { selected.contains($0.id) }.map {
-        TermEntry(server: $0, credentials: includeSecrets ? try Vault.read($0.id) : nil)
-      }
+      let entries = try TermArchive.collect(
+        store.servers.filter { selected.contains($0.id) },
+        includeCredentials: includeSecrets, read: Vault.read)
       let secret = password
       busy = true
       message = nil

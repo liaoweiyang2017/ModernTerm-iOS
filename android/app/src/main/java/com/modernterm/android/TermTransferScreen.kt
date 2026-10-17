@@ -253,17 +253,13 @@ fun TermTransferScreen(vm: Workspace, dismiss: () -> Unit) {
                                             output =
                                                 withContext(Dispatchers.IO) {
                                                     val entries =
-                                                        vm.store
-                                                            .servers()
-                                                            .filter { it.id in ids }
-                                                            .map {
-                                                                TermEntry(
-                                                                    it,
-                                                                    if (secrets)
-                                                                        vm.store.credentials(it.id)
-                                                                    else null,
-                                                                )
-                                                            }
+                                                        TermArchive.collect(
+                                                            vm.store.servers().filter {
+                                                                it.id in ids
+                                                            },
+                                                            secrets,
+                                                            vm.store::credentials,
+                                                        )
                                                     TermArchive.encode(entries, secret)
                                                 }
                                             vm.externalFileFlow = true

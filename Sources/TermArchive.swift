@@ -50,6 +50,28 @@ enum TermArchive {
       })
     else { throw AppError.message("Invalid connections or archive limits exceeded.") }
   }
+  // Bound credential reads before constructing the full plaintext payload.
+  static func collect(
+    _ servers: [Server], includeCredentials: Bool,
+    read: (UUID) throws -> Credentials
+  ) throws -> [TermEntry] {
+    guard !servers.isEmpty, servers.count <= 200 else {
+      throw AppError.message("Choose 1–200 connections.")
+    }
+    var size = 64
+    var entries: [TermEntry] = []
+    for server in servers {
+      let entry = TermEntry(
+        server: server, credentials: includeCredentials ? try read(server.id) : nil)
+      try validate([entry])
+      size += try JSONEncoder().encode(entry).count + 1
+      guard size <= maximum - 64 else {
+        throw AppError.message("Archive exceeds 16 MiB. Select fewer connections.")
+      }
+      entries.append(entry)
+    }
+    return entries
+  }
   static func encode(_ entries: [TermEntry], password: String) throws -> Data {
     try validate(entries)
     let salt = Data((0..<16).map { _ in UInt8.random(in: 0...255) })

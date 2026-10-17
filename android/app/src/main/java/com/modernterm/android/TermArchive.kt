@@ -50,6 +50,30 @@ object TermArchive {
         }
     }
 
+    // Stop reading secrets as soon as the file budget is exhausted.
+    fun collect(
+        servers: List<Server>,
+        includeCredentials: Boolean,
+        read: (String) -> Credentials,
+    ): List<TermEntry> {
+        require(servers.isNotEmpty() && servers.size <= 200) { "Choose 1–200 connections." }
+        var size = 64
+        val entries = mutableListOf<TermEntry>()
+        for (server in servers) {
+            val entry = TermEntry(server, if (includeCredentials) read(server.id) else null)
+            validate(listOf(entry))
+            size += entryJson(entry).toString().toByteArray().size + 1
+            require(size <= MAXIMUM - 64) { "Archive exceeds 16 MiB. Select fewer connections." }
+            entries.add(entry)
+        }
+        return entries
+    }
+
+    private fun entryJson(entry: TermEntry): JSONObject =
+        JSONObject().put("server", entry.server.json()).apply {
+            entry.credentials?.let { put("credentials", it.json()) }
+        }
+
     fun encode(entries: List<TermEntry>, password: String): ByteArray {
         validate(entries)
         val plain =
