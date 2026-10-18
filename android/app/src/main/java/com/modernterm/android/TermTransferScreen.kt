@@ -32,6 +32,7 @@ fun TermTransferScreen(vm: Workspace, dismiss: () -> Unit) {
     var busy by remember { mutableStateOf(false) }
     var critical by remember { mutableStateOf(false) }
     var message by remember { mutableStateOf<String?>(null) }
+    var exportError by remember { mutableStateOf<String?>(null) }
     var output by remember { mutableStateOf<ByteArray?>(null) }
     var files by remember { mutableStateOf(emptyList<ByteArray>()) }
     var fileNames by remember { mutableStateOf(emptyList<String>()) }
@@ -86,13 +87,62 @@ fun TermTransferScreen(vm: Workspace, dismiss: () -> Unit) {
                         }
                         message = "Encrypted file exported."
                     } catch (e: Exception) {
-                        message = "Export failed. Remove any incomplete destination file and retry."
+                        exportError =
+                            "Export failed. Remove any incomplete destination file and retry."
                     } finally {
                         critical = false
                         busy = false
                     }
                 }
         }
+    val sharer =
+        rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            vm.externalFileFlow = false
+            message = "Share sheet closed."
+        }
+    LaunchedEffect(Unit) { withContext(Dispatchers.IO) { TermShareFile.cleanup(context) } }
+    fun export(sharing: Boolean) {
+        if (busy) return
+        val secret = password
+        val ids = selected
+        val secrets = includeSecrets
+        busy = true
+        message = null
+        scope.launch {
+            try {
+                val data =
+                    withContext(Dispatchers.IO) {
+                        TermArchive.validatePassword(secret)
+                        val entries =
+                            TermArchive.collect(
+                                vm.store.servers().filter { it.id in ids },
+                                secrets,
+                                vm.store::credentials,
+                            )
+                        TermArchive.encode(entries, secret)
+                    }
+                if (sharing) {
+                    val intent =
+                        withContext(Dispatchers.IO) { TermShareFile.chooser(context, data) }
+                    vm.externalFileFlow = true
+                    sharer.launch(intent)
+                } else {
+                    output = data
+                    vm.externalFileFlow = true
+                    writer.launch("ModernTerm-connections.term")
+                }
+                password = ""
+                repeat = ""
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                vm.externalFileFlow = false
+                exportError = e.message ?: "Export failed."
+            } finally {
+                busy = false
+            }
+        }
+    }
     val picker =
         rememberLauncherForActivityResult(ActivityResultContracts.OpenMultipleDocuments()) { uris ->
             vm.externalFileFlow = false
@@ -153,6 +203,14 @@ fun TermTransferScreen(vm: Workspace, dismiss: () -> Unit) {
         onDismissRequest = { if (!critical) dismiss() },
         properties = DialogProperties(usePlatformDefaultWidth = false),
     ) {
+        exportError?.let { error ->
+            AlertDialog(
+                onDismissRequest = { exportError = null },
+                title = { Text("Export failed") },
+                text = { Text(error) },
+                confirmButton = { TextButton(onClick = { exportError = null }) { Text("OK") } },
+            )
+        }
         Scaffold(
             topBar = {
                 TopAppBar(
@@ -236,46 +294,46 @@ fun TermTransferScreen(vm: Workspace, dismiss: () -> Unit) {
                         }
                         item { FilePassword("Repeat file password", repeat, !busy) { repeat = it } }
                         item {
+                            Text(
+                                "File password: at least 12 characters.",
+                                style = MaterialTheme.typography.bodySmall,
+                            )
+                            if (repeat.isNotEmpty() && password != repeat)
+                                Text(
+                                    "The two file passwords do not match.",
+                                    color = MaterialTheme.colorScheme.error,
+                                )
+                            if (selected.isEmpty())
+                                Text("Select at least one connection to continue.")
+                            if (busy) LinearProgressIndicator(Modifier.fillMaxWidth())
+                        }
+                        item {
                             Button(
                                 enabled =
                                     !busy &&
                                         selected.isNotEmpty() &&
                                         password.isNotEmpty() &&
                                         password == repeat,
-                                onClick = {
-                                    val secret = password
-                                    val ids = selected
-                                    val secrets = includeSecrets
-                                    busy = true
-                                    message = null
-                                    scope.launch {
-                                        try {
-                                            output =
-                                                withContext(Dispatchers.IO) {
-                                                    val entries =
-                                                        TermArchive.collect(
-                                                            vm.store.servers().filter {
-                                                                it.id in ids
-                                                            },
-                                                            secrets,
-                                                            vm.store::credentials,
-                                                        )
-                                                    TermArchive.encode(entries, secret)
-                                                }
-                                            vm.externalFileFlow = true
-                                            writer.launch("ModernTerm-connections.term")
-                                        } catch (e: Exception) {
-                                            message = e.message ?: "Export failed."
-                                        } finally {
-                                            password = ""
-                                            repeat = ""
-                                            busy = false
-                                        }
-                                    }
-                                },
+                                onClick = { export(false) },
                             ) {
                                 Text("Export ${selected.size} connections")
                             }
+                        }
+                        item {
+                            OutlinedButton(
+                                enabled =
+                                    !busy &&
+                                        selected.isNotEmpty() &&
+                                        password.isNotEmpty() &&
+                                        password == repeat,
+                                onClick = { export(true) },
+                            ) {
+                                Text("Share ${selected.size} connections")
+                            }
+                            Text(
+                                "Share opens WeChat or another available app. Send the file password separately.",
+                                style = MaterialTheme.typography.bodySmall,
+                            )
                         }
                         item { HorizontalDivider() }
                         item {

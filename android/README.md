@@ -59,7 +59,7 @@ No local shell, SSH tunnel, permanent background daemon, automatic reconnection,
 
 ## Encrypted connection transfer
 
-Open **SSH transfer** from the top toolbar. Select connections, optionally include stored passwords/private keys, and set a separate file password (12+ characters). Save the `.term` through the system file picker. All configuration and credentials are AES-256-GCM encrypted. Share the password separately; forgotten passwords cannot be recovered.
+Open **SSH transfer** from the top toolbar. Select connections, optionally include stored passwords/private keys, and set a separate file password (12+ characters). Choose **Export N connections** to save through the system file picker, or **Share N connections** to choose WeChat or another installed app in the system share sheet. Sharing grants temporary read access to the encrypted attachment; it does not include the file password. All configuration and credentials are AES-256-GCM encrypted. Share the password separately; forgotten passwords cannot be recovered.
 
 Choose up to 20 `.term` files (16 MiB combined), unlock each, then review the merged preview. Existing UUIDs are skipped unless you choose a new copy. Conflicting versions require an explicit choice; existing connections/credentials are never overwritten. Configuration-only imports may require credentials before connecting. Trust fingerprints are not transferred. Imports do not connect automatically. Cancelling or invalid files makes no configuration changes; an interrupted app process discards the pending preview.
 

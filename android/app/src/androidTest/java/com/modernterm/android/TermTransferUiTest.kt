@@ -40,6 +40,43 @@ class TermTransferUiTest {
     }
 
     @Test
+    fun shortPasswordHasVisibleErrorAndRetainsInput() {
+        val server = Server(host = "validation.invalid", user = "test")
+        compose.activityRule.scenario.onActivity { a ->
+            a.workspace.store.save(server, Credentials())
+            a.workspace.reload()
+        }
+        try {
+            compose.onNodeWithContentDescription("SSH transfer").performClick()
+            compose.onNodeWithText("Select all").performClick()
+            compose
+                .onNodeWithText("File password (12+ characters)")
+                .performScrollTo()
+                .performTextInput("12345678")
+            compose
+                .onNodeWithText("Repeat file password")
+                .performScrollTo()
+                .performTextInput("12345678")
+            compose.onNodeWithText("Export 1 connections").performScrollTo().performClick()
+            compose.waitUntil(5000) {
+                compose.onAllNodesWithText("Export failed").fetchSemanticsNodes().isNotEmpty()
+            }
+            compose
+                .onNodeWithText(
+                    "Use a file password of at least 12 characters (maximum 1024 UTF-8 bytes)."
+                )
+                .assertIsDisplayed()
+            compose.onNodeWithText("OK").performClick()
+            compose.onNodeWithText("Export 1 connections").assertIsEnabled()
+        } finally {
+            compose.activityRule.scenario.onActivity { a ->
+                a.workspace.store.delete(server)
+                a.workspace.reload()
+            }
+        }
+    }
+
+    @Test
     fun batchImportPreviewAndEncryptedConfigurationExport() {
         val instrument = InstrumentationRegistry.getInstrumentation()
         val context = instrument.targetContext
@@ -77,7 +114,13 @@ class TermTransferUiTest {
             Intents.intending(hasAction(Intent.ACTION_CREATE_DOCUMENT))
                 .respondWith(ActivityResult(Activity.RESULT_OK, Intent().setData(uri(output))))
             compose.onNodeWithContentDescription("SSH transfer").performClick()
-            compose.onNodeWithText("Choose .term files…").performScrollTo().performClick()
+            // The picker result is stubbed: use the same accessibility action to avoid
+            // a touch landing during the native Dialog entrance animation.
+            compose.onNodeWithText("Choose .term files…").performScrollTo().performSemanticsAction(
+                androidx.compose.ui.semantics.SemanticsActions.OnClick
+            ) {
+                it()
+            }
             repeat(2) {
                 compose.waitUntil(30000) {
                     compose
@@ -111,6 +154,28 @@ class TermTransferUiTest {
             val exported = TermArchive.decode(output.readBytes(), password)
             assertEquals(2, exported.size)
             assertTrue(exported.all { it.credentials == null })
+            Intents.intending(hasAction(Intent.ACTION_CHOOSER))
+                .respondWith(ActivityResult(Activity.RESULT_CANCELED, null))
+            compose
+                .onNodeWithText("File password (12+ characters)")
+                .performScrollTo()
+                .performTextInput(password)
+            compose
+                .onNodeWithText("Repeat file password")
+                .performScrollTo()
+                .performTextInput(password)
+            compose.onNodeWithText("Share 2 connections").performScrollTo().performClick()
+            compose.waitUntil(30000) {
+                Intents.getIntents().any { it.action == Intent.ACTION_CHOOSER }
+            }
+            val share = Intents.getIntents().last { it.action == Intent.ACTION_CHOOSER }
+            @Suppress("DEPRECATION")
+            val send = share.getParcelableExtra<Intent>(Intent.EXTRA_INTENT)!!
+            @Suppress("DEPRECATION")
+            val sharedUri = send.getParcelableExtra<android.net.Uri>(Intent.EXTRA_STREAM)!!
+            val shared = context.contentResolver.openInputStream(sharedUri)!!.use { it.readBytes() }
+            assertEquals(exported, TermArchive.decode(shared, password))
+            assertFalse(send.hasExtra(Intent.EXTRA_TEXT))
             compose.onNodeWithText("Done").performClick()
             assertTrue(compose.activity.workspace.sessions.isEmpty())
         } catch (e: Throwable) {
@@ -127,7 +192,7 @@ class TermTransferUiTest {
                         useUnmergedTree = true,
                     )
                     .fetchSemanticsNodes()
-                    .take(20)
+                    .takeLast(40)
                     .joinToString(" | ") {
                         it.config[androidx.compose.ui.semantics.SemanticsProperties.Text]
                             .joinToString { text -> text.text }
@@ -135,6 +200,7 @@ class TermTransferUiTest {
             throw AssertionError("${e.message}; visible labels: $texts", e)
         } finally {
             Intents.release()
+            TermShareFile.cleanup(context, System.currentTimeMillis() + 25 * 60 * 60 * 1000L)
             compose.activityRule.scenario.onActivity { a ->
                 entries.forEach { a.workspace.store.delete(it.server) }
                 a.workspace.reload()

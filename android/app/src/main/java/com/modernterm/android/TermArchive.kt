@@ -17,11 +17,16 @@ object TermArchive {
     const val MAXIMUM = 16 * 1024 * 1024
     private val prefix = byteArrayOf(77, 84, 69, 82, 77, 0, 13, 10, 0, 1, 1, 1, 0, 9, 39, -64)
 
-    private fun key(password: String, salt: ByteArray): SecretKeySpec {
+    fun validatePassword(password: String) {
         val p = Normalizer.normalize(password, Normalizer.Form.NFC)
         require(p.codePointCount(0, p.length) >= 12 && p.toByteArray().size <= 1024) {
             "Use a file password of at least 12 characters (maximum 1024 UTF-8 bytes)."
         }
+    }
+
+    private fun key(password: String, salt: ByteArray): SecretKeySpec {
+        val p = Normalizer.normalize(password, Normalizer.Form.NFC)
+        validatePassword(p)
         val chars = p.toCharArray()
         val spec = PBEKeySpec(chars, salt, 600000, 256)
         try {

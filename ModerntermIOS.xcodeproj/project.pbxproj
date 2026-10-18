@@ -36,7 +36,9 @@
 		AC30566D34745BF6B5A610ED /* TermArchiveTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1C0D9F5F4D684E627C6BD90 /* TermArchiveTests.swift */; };
 		B1D575C71DF52CB7E7DF66F8 /* PasswordConnectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7A74A91BD4F0E67D0DD8FDB /* PasswordConnectionTests.swift */; };
 		B45BA7216E30CF7DDA90FD03 /* Crypto in Frameworks */ = {isa = PBXBuildFile; productRef = 7641CA59251BCC565C02EEB2 /* Crypto */; };
+		BAEF100BAB7E2E30D1680232 /* TermShareFileTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60C9E1243BCA85E18B8452BA /* TermShareFileTests.swift */; };
 		C622485B6F4C5B6C5D061D7A /* GatewayProbeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4528BF022C57D014F78BB49 /* GatewayProbeTests.swift */; };
+		D342C33FD84C1DC4BC705BCB /* TermShareFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4A7A838EE34ACB100CB724F /* TermShareFile.swift */; };
 		D7F3A13EFB110AC4ECB54839 /* MetricsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8BB3E65C9F6C90CE8A02B91 /* MetricsTests.swift */; };
 		D82A00DA6498A9A6E4230E3B /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 755C0BBA801DD62F8EA11710 /* Models.swift */; };
 		DF6FE620844DA5F088FC95EA /* TermTransferScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F2240472F2196DA2B5D7607 /* TermTransferScreen.swift */; };
@@ -74,6 +76,7 @@
 		5034F46C3B37C7D67BEC5E1C /* reference.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = reference.json; sourceTree = "<group>"; };
 		5458393C9391D7520034F255 /* MonitoringScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonitoringScreen.swift; sourceTree = "<group>"; };
 		5F808DB76DE1E2B4B7792907 /* FilesScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilesScreen.swift; sourceTree = "<group>"; };
+		60C9E1243BCA85E18B8452BA /* TermShareFileTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TermShareFileTests.swift; sourceTree = "<group>"; };
 		6BED593D0FAD92BAFFABE4E4 /* Citadel */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Citadel; path = Vendor/Citadel; sourceTree = SOURCE_ROOT; };
 		7244E171FD6252D27AD1F441 /* MacMigration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacMigration.swift; sourceTree = "<group>"; };
 		755C0BBA801DD62F8EA11710 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
@@ -104,6 +107,7 @@
 		EF35C3A2A322754645300671 /* ThirdParty.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = ThirdParty.txt; sourceTree = "<group>"; };
 		F0A983A8515EFBCA726ACF97 /* TerminalKeyboardTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalKeyboardTests.swift; sourceTree = "<group>"; };
 		F2233DCA524C5718037A6D6B /* TerminalThemeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalThemeTests.swift; sourceTree = "<group>"; };
+		F4A7A838EE34ACB100CB724F /* TermShareFile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TermShareFile.swift; sourceTree = "<group>"; };
 		F8BB3E65C9F6C90CE8A02B91 /* MetricsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricsTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -154,6 +158,7 @@
 				D63D61021347821C5D69EE80 /* TermArchive.swift */,
 				799959767E315FA8EA919272 /* TerminalInputView.swift */,
 				977F66D406FC566745E48B81 /* TerminalScreen.swift */,
+				F4A7A838EE34ACB100CB724F /* TermShareFile.swift */,
 				7F2240472F2196DA2B5D7607 /* TermTransferScreen.swift */,
 			);
 			path = Sources;
@@ -194,6 +199,7 @@
 				B1C0D9F5F4D684E627C6BD90 /* TermArchiveTests.swift */,
 				F0A983A8515EFBCA726ACF97 /* TerminalKeyboardTests.swift */,
 				F2233DCA524C5718037A6D6B /* TerminalThemeTests.swift */,
+				60C9E1243BCA85E18B8452BA /* TermShareFileTests.swift */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
@@ -378,6 +384,7 @@
 				B1D575C71DF52CB7E7DF66F8 /* PasswordConnectionTests.swift in Sources */,
 				7A13F0A261EB253DFD1448B1 /* RSAHostKeyTests.swift in Sources */,
 				AC30566D34745BF6B5A610ED /* TermArchiveTests.swift in Sources */,
+				BAEF100BAB7E2E30D1680232 /* TermShareFileTests.swift in Sources */,
 				48CA3592D3099D8127A235B7 /* TerminalKeyboardTests.swift in Sources */,
 				EB361F67970E47E22AD15919 /* TerminalThemeTests.swift in Sources */,
 			);
@@ -398,6 +405,7 @@
 				852EE47FE3390DB47041DBFE /* SSHSession.swift in Sources */,
 				F703A35209861359066149FA /* ServerMetrics.swift in Sources */,
 				F175FA9259D4F746EC8E35AD /* TermArchive.swift in Sources */,
+				D342C33FD84C1DC4BC705BCB /* TermShareFile.swift in Sources */,
 				DF6FE620844DA5F088FC95EA /* TermTransferScreen.swift in Sources */,
 				3053C58924E9B6F916023FFD /* TerminalInputView.swift in Sources */,
 				60BF2766954F08C4C9F097EB /* TerminalScreen.swift in Sources */,

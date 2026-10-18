@@ -2,7 +2,7 @@
 
 独立的原生 SwiftUI + UIKit SSH 客户端，沿用 Modernterm 的应用图标。AppKit 只适用于 macOS，因此移动端采用 UIKit 的 SwiftTerm 终端视图。当前版本 0.2.3，iOS / iPadOS 17+。
 
-[下载 0.2.3 (6) 安装包与校验文件](https://github.com/liaoweiyang2017/ModernTerm-iOS/releases/tag/v0.2.3-build6-icons) · [本次验收记录](specs/004-term-transfer/validation.md)
+[下载 0.2.3 (6) 安装包与校验文件](https://github.com/liaoweiyang2017/ModernTerm-iOS/releases/tag/v0.2.3-build6-sharing) · [本次验收记录](specs/006-transfer-sharing/validation.md)
 
 2026-10-18：两端统一桌面最新版图标，版本仍为 0.2.3 (6)，并已更新到 iPhone。[图标与部署验收](specs/005-mobile-icon-alignment/validation.md)。
 
@@ -110,3 +110,5 @@ SFTP 子系统被拒绝时结束初始化并关闭该子通道，已有终端连
 iOS 和 Android 顶部的 **SSH transfer** 支持多选导出、全选、多个 `.term` 文件批量导入。默认仅配置，可选包含保存的密码、私钥和口令；整个文件由独立密码加密，不能直接用文本查看连接信息。导入先预览，已有 UUID 默认跳过，可作为新副本导入；主机信任不转移，也不会自动连接。文件密码至少 12 个字符，遗忘无法恢复。
 
 [格式与互通测试](shared/term-transfer/README.md) · [需求与验收](specs/004-term-transfer/spec.md) · [实际验证记录](specs/004-term-transfer/validation.md)。本次 iOS 只完成模拟器与构建验证，真机部署由用户后续执行。
+
+导出时可选 **Export N connections** 保存文件，或 **Share N connections** 打开系统分享面板，选择微信等已安装应用。微信未出现在第一屏时可点“更多”。分享的是加密 `.term` 附件，文件密码需另行告知接收方。短密码等错误会弹窗提示并保留输入。

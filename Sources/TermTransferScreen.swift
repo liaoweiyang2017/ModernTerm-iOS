@@ -30,6 +30,10 @@ struct TermTransferScreen: View {
   @State private var picking = false
   @State private var exporting = false
   @State private var document: TermDocument?
+  @State private var shareFile: TermShareFile?
+  @State private var shareFileToClean: TermShareFile?
+  @State private var shareError: Error?
+  @State private var exportError: String?
   @State private var files: [Data] = []
   @State private var fileNames: [String] = []
   @State private var mergedDuplicates = 0
@@ -76,9 +80,28 @@ struct TermTransferScreen: View {
               "The entire file is encrypted. Use a separate long password; a forgotten file password cannot be recovered."
             ).font(.caption)
             SecureField("File password (12+ characters)", text: $password)
-            SecureField("Repeat file password", text: $repeatPassword)
+              .textInputAutocapitalization(.never).autocorrectionDisabled()
+            SecureField("Repeat file password", text: $repeatPassword).textInputAutocapitalization(
+              .never
+            ).autocorrectionDisabled()
+            Text("File password: at least 12 characters. Share the password separately.").font(
+              .caption)
+            if !repeatPassword.isEmpty && password != repeatPassword {
+              Text("The two file passwords do not match.").font(.caption).foregroundStyle(.red)
+            }
+            if selected.isEmpty {
+              Text("Select at least one connection to continue.").font(.caption)
+            }
+            if busy { ProgressView("Encrypting selected connections…") }
             Button("Export \(selected.count) connections") { export() }.disabled(
               selected.isEmpty || password != repeatPassword || password.isEmpty)
+            Button("Share \(selected.count) connections", systemImage: "square.and.arrow.up") {
+              export(sharing: true)
+            }
+            .disabled(selected.isEmpty || password != repeatPassword || password.isEmpty)
+            Text("Export saves a .term file. Share opens WeChat or another available app.").font(
+              .caption
+            ).foregroundStyle(.secondary)
           }
           Section("Import") {
             Button("Choose .term files…") {
@@ -145,7 +168,7 @@ struct TermTransferScreen: View {
             Button("Cancel import", role: .cancel) { reset() }
           }
         }
-        if busy { ProgressView("Processing encrypted file…") }
+        if busy && !files.isEmpty { ProgressView("Processing encrypted file…") }
         if let message { Text(message).foregroundStyle(.secondary) }
       }
       .disabled(busy)
@@ -156,6 +179,33 @@ struct TermTransferScreen: View {
           dismiss()
         }
       }
+      .alert(
+        "Export failed",
+        isPresented: Binding(get: { exportError != nil }, set: { if !$0 { exportError = nil } })
+      ) {
+        Button("OK") { exportError = nil }
+      } message: {
+        Text(exportError ?? "")
+      }
+      .sheet(
+        item: $shareFile,
+        onDismiss: {
+          shareFileToClean?.remove()
+          shareFileToClean = nil
+          if let error = shareError {
+            exportError = error.localizedDescription
+          } else {
+            message = "Share sheet closed."
+          }
+          shareError = nil
+        }
+      ) { file in
+        TermShareSheet(file: file) { error in
+          shareError = error
+          shareFile = nil
+        }
+      }
+      .task { TermShareFile.cleanup() }
       .fileImporter(
         isPresented: $picking, allowedContentTypes: [.termArchive, .data],
         allowsMultipleSelection: true
@@ -193,13 +243,18 @@ struct TermTransferScreen: View {
         document = nil
         switch result {
         case .success: message = "Encrypted file exported."
-        case .failure: message = "Export cancelled or failed."
+        case .failure(let error):
+          if (error as NSError).code != NSUserCancelledError {
+            exportError = "Could not save the file: \(error.localizedDescription)"
+          } else {
+            message = "Export cancelled."
+          }
         }
       }
     }.onDisappear {
       // Older iOS versions also call this when presenting the system document picker.
       // Its FileDocument must stay alive until the export completion callback.
-      if !exporting && !picking {
+      if !exporting && !picking && shareFile == nil {
         reset()
         document = nil
       }
@@ -220,8 +275,10 @@ struct TermTransferScreen: View {
     repeatPassword = ""
     message = nil
   }
-  private func export() {
+  private func export(sharing: Bool = false) {
+    guard !busy else { return }
     do {
+      _ = try TermArchive.passwordBytes(password)
       let entries = try TermArchive.collect(
         store.servers.filter { selected.contains($0.id) },
         includeCredentials: includeSecrets, read: Vault.read)
@@ -234,17 +291,27 @@ struct TermTransferScreen: View {
           let data = try await Task.detached { try TermArchive.encode(entries, password: secret) }
             .value
           guard token == operation else { return }
-          document = TermDocument(data: data)
-          exporting = true
+          if sharing {
+            let file = try await Task.detached { try TermShareFile.prepare(data) }.value
+            guard token == operation else {
+              file.remove()
+              return
+            }
+            shareFileToClean = file
+            shareFile = file
+          } else {
+            document = TermDocument(data: data)
+            exporting = true
+          }
+          password = ""
+          repeatPassword = ""
         } catch {
           guard token == operation else { return }
-          message = error.localizedDescription
+          exportError = error.localizedDescription
         }
-        password = ""
-        repeatPassword = ""
         busy = false
       }
-    } catch { message = error.localizedDescription }
+    } catch { exportError = error.localizedDescription }
   }
   private func unlock() {
     let data = files[fileIndex]

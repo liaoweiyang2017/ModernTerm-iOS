@@ -1,6 +1,87 @@
 import XCTest
 
 final class TermTransferUITests: XCTestCase {
+  func testShortPasswordShowsVisibleErrorAndKeepsInput() throws {
+    let app = XCUIApplication()
+    app.launch()
+    app.buttons["Add server"].tap()
+    app.textFields["Host"].tap()
+    app.textFields["Host"].typeText("validation.invalid")
+    app.textFields["Username"].tap()
+    app.textFields["Username"].typeText("test")
+    app.buttons["Save"].tap()
+    app.buttons["SSH transfer"].tap()
+    app.buttons["Select all"].tap()
+    for label in ["File password (12+ characters)", "Repeat file password"] {
+      let field = app.secureTextFields[label]
+      for _ in 0..<12 {
+        if field.isHittable { break }
+        app.swipeUp()
+      }
+      field.tap()
+      field.typeText("12345678")
+    }
+    let button = app.buttons.matching(
+      NSPredicate(format: "label BEGINSWITH 'Export ' AND label ENDSWITH ' connections'")
+    ).firstMatch
+    for _ in 0..<4 {
+      if button.isHittable { break }
+      app.swipeUp()
+    }
+    button.tap()
+    XCTAssertTrue(app.alerts["Export failed"].waitForExistence(timeout: 5))
+    if app.alerts["Export failed"].exists {
+      XCTAssertTrue(
+        app.alerts.staticTexts.matching(NSPredicate(format: "label CONTAINS 'at least 12'"))
+          .firstMatch.exists)
+      app.alerts.buttons["OK"].tap()
+      XCTAssertTrue(button.isEnabled, "Inputs must remain available to correct after failure")
+    }
+  }
+
+  func testShareOpensNativeAttachmentSheet() throws {
+    let app = XCUIApplication()
+    app.launch()
+    app.buttons["Add server"].tap()
+    app.textFields["Host"].tap()
+    app.textFields["Host"].typeText("share.invalid")
+    app.textFields["Username"].tap()
+    app.textFields["Username"].typeText("test")
+    app.buttons["Save"].tap()
+    app.buttons["SSH transfer"].tap()
+    app.buttons["Select all"].tap()
+    for label in ["File password (12+ characters)", "Repeat file password"] {
+      let field = app.secureTextFields[label]
+      for _ in 0..<12 {
+        if field.isHittable { break }
+        app.swipeUp()
+      }
+      field.tap()
+      field.typeText("sharing-test-2026")
+    }
+    let button = app.buttons.matching(
+      NSPredicate(format: "label BEGINSWITH 'Share ' AND label ENDSWITH ' connections'")
+    ).firstMatch
+    for _ in 0..<5 {
+      if button.isHittable { break }
+      app.swipeUp()
+    }
+    button.tap()
+    let filename = app.descendants(matching: .any).matching(
+      NSPredicate(format: "label CONTAINS 'ModernTerm-connections'")
+    ).firstMatch
+    XCTAssertTrue(filename.waitForExistence(timeout: 15), app.debugDescription)
+    let shot = XCTAttachment(screenshot: app.screenshot())
+    shot.name = "Encrypted file share sheet"
+    shot.lifetime = .keepAlways
+    add(shot)
+    if app.buttons["Close"].exists {
+      app.buttons["Close"].firstMatch.tap()
+    } else {
+      app.swipeDown()
+    }
+  }
+
   func testSelectionPasswordAndNativeExporter() throws {
     let app = XCUIApplication()
     app.launch()
