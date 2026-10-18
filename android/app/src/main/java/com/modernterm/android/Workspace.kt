@@ -45,6 +45,10 @@ data class TrustPrompt(
 )
 
 class Workspace(app: Application) : AndroidViewModel(app) {
+    var incomingFiles by mutableStateOf<List<TermIncomingFile>>(emptyList())
+    var incomingError by mutableStateOf<String?>(null)
+    var receivingFile by mutableStateOf(false)
+    var transferOpen by mutableStateOf(false)
     val store = LocalStore(app)
     var servers by mutableStateOf<List<Server>>(emptyList())
         private set

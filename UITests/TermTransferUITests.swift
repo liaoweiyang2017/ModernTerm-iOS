@@ -1,6 +1,39 @@
 import XCTest
 
 final class TermTransferUITests: XCTestCase {
+  func testExternalFileColdAndWarmOpen() throws {
+    let source = try XCTUnwrap(
+      Bundle(for: Self.self).url(forResource: "attachment", withExtension: "term"))
+    let url = FileManager.default.temporaryDirectory.appendingPathComponent("received.term")
+    try Data(contentsOf: source).write(to: url)
+    defer { try? FileManager.default.removeItem(at: url) }
+    let app = XCUIApplication()
+    app.terminate()
+    app.open(url)
+    let unlock = app.secureTextFields["File password"]
+    XCTAssertTrue(unlock.waitForExistence(timeout: 8), app.debugDescription)
+    unlock.tap()
+    unlock.typeText("incorrect-password")
+    app.buttons["Unlock and continue"].tap()
+    XCTAssertTrue(
+      app.staticTexts.matching(
+        NSPredicate(format: "label == 'Wrong password or damaged file.'")
+      ).firstMatch.waitForExistence(timeout: 5), app.debugDescription)
+    unlock.tap()
+    unlock.typeText(
+      String(repeating: XCUIKeyboardKey.delete.rawValue, count: "incorrect-password".count))
+    unlock.typeText("attachment-test-2026")
+    app.buttons["Unlock and continue"].tap()
+    XCTAssertTrue(
+      app.staticTexts.matching(NSPredicate(format: "label ==[c] 'Import preview'")).firstMatch
+        .waitForExistence(timeout: 10), app.debugDescription)
+    app.buttons["Done"].tap()
+    XCUIDevice.shared.system.open(url)
+    XCTAssertTrue(unlock.waitForExistence(timeout: 8), app.debugDescription)
+    app.buttons["Cancel import"].tap()
+    app.buttons["Done"].tap()
+  }
+
   func testShortPasswordShowsVisibleErrorAndKeepsInput() throws {
     let app = XCUIApplication()
     app.launch()

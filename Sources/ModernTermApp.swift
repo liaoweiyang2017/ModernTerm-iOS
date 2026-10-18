@@ -59,6 +59,7 @@ struct RootScreen: View {
   @State private var settings = false
   @State private var macros = false
   @State private var transfer = false
+  @State private var incomingFile: TermIncomingFile?
   @State private var deleteServer: Server?
   @State private var error: String?
   var filtered: [Server] {
@@ -154,6 +155,17 @@ struct RootScreen: View {
     }
     .sheet(isPresented: $settings) { SettingsScreen() }
     .sheet(isPresented: $transfer) { TermTransferScreen() }
+    .sheet(item: $incomingFile) { file in TermTransferScreen(incoming: file) }
+    .onOpenURL { url in
+      guard incomingFile == nil && !transfer && editing == nil && !settings && !overview && !macros
+      else {
+        error = "Finish or cancel the current screen, then open the attachment again."
+        return
+      }
+      do {
+        incomingFile = try TermIncomingFile.read(url)
+      } catch { self.error = error.localizedDescription }
+    }
     .sheet(isPresented: $macros) {
       MacrosScreen(session: workspace.sessions.first(where: { $0.id == workspace.selected }))
     }

@@ -18,6 +18,12 @@ import org.junit.Test
 class TermTransferUiTest {
     @get:Rule val compose = createAndroidComposeRule<MainActivity>()
 
+    // Exercise the exposed accessibility action independently of emulator touch animations.
+    private fun SemanticsNodeInteraction.activate(): SemanticsNodeInteraction {
+        compose.waitUntil(30000) { isEnabled().matches(fetchSemanticsNode()) }
+        return performSemanticsAction(androidx.compose.ui.semantics.SemanticsActions.OnClick) { it() }
+    }
+
     private fun capturePreview() {
         val instrument = InstrumentationRegistry.getInstrumentation()
         val resolver = instrument.targetContext.contentResolver
@@ -40,6 +46,47 @@ class TermTransferUiTest {
     }
 
     @Test
+    fun externalAttachmentOpensPasswordPreviewWithoutSaving() {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val input =
+            File(context.cacheDir, "downloads/external.term").apply {
+                parentFile!!.mkdirs()
+                writeBytes(
+                    InstrumentationRegistry.getInstrumentation()
+                        .context
+                        .assets
+                        .open("reference.term")
+                        .use { it.readBytes() }
+                )
+            }
+        val uri = FileProvider.getUriForFile(context, context.packageName + ".files", input)
+        val intent =
+            Intent(Intent.ACTION_VIEW)
+                .setDataAndType(uri, "application/octet-stream")
+                .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        assertTrue(
+            "ModernTerm must appear in Open with",
+            context.packageManager.queryIntentActivities(intent, 0).any {
+                it.activityInfo.packageName == context.packageName
+            },
+        )
+        val before = compose.activity.workspace.servers.size
+        compose.activityRule.scenario.onActivity {
+            it.startActivity(Intent(intent).setClass(context, MainActivity::class.java))
+        }
+        compose.waitUntil(5000) {
+            compose.onAllNodesWithText("Unlock and continue").fetchSemanticsNodes().isNotEmpty()
+        }
+        compose.onNodeWithText("File password").performTextInput("互通测试-café-🔐-2026")
+        compose.onNodeWithText("Unlock and continue").activate()
+        compose.waitUntil(60000) {
+            compose.onAllNodesWithText("Import preview").fetchSemanticsNodes().isNotEmpty()
+        }
+        assertEquals(before, compose.activity.workspace.servers.size)
+        input.delete()
+    }
+
+    @Test
     fun shortPasswordHasVisibleErrorAndRetainsInput() {
         val server = Server(host = "validation.invalid", user = "test")
         compose.activityRule.scenario.onActivity { a ->
@@ -47,8 +94,8 @@ class TermTransferUiTest {
             a.workspace.reload()
         }
         try {
-            compose.onNodeWithContentDescription("SSH transfer").performClick()
-            compose.onNodeWithText("Select all").performClick()
+            compose.onNodeWithContentDescription("SSH transfer").activate()
+            compose.onNodeWithText("Select all").activate()
             compose
                 .onNodeWithText("File password (12+ characters)")
                 .performScrollTo()
@@ -57,7 +104,7 @@ class TermTransferUiTest {
                 .onNodeWithText("Repeat file password")
                 .performScrollTo()
                 .performTextInput("12345678")
-            compose.onNodeWithText("Export 1 connections").performScrollTo().performClick()
+            compose.onNodeWithText("Export 1 connections").performScrollTo().activate()
             compose.waitUntil(5000) {
                 compose.onAllNodesWithText("Export failed").fetchSemanticsNodes().isNotEmpty()
             }
@@ -66,7 +113,7 @@ class TermTransferUiTest {
                     "Use a file password of at least 12 characters (maximum 1024 UTF-8 bytes)."
                 )
                 .assertIsDisplayed()
-            compose.onNodeWithText("OK").performClick()
+            compose.onNodeWithText("OK").activate()
             compose.onNodeWithText("Export 1 connections").assertIsEnabled()
         } finally {
             compose.activityRule.scenario.onActivity { a ->
@@ -113,7 +160,7 @@ class TermTransferUiTest {
                 .respondWith(ActivityResult(Activity.RESULT_OK, result))
             Intents.intending(hasAction(Intent.ACTION_CREATE_DOCUMENT))
                 .respondWith(ActivityResult(Activity.RESULT_OK, Intent().setData(uri(output))))
-            compose.onNodeWithContentDescription("SSH transfer").performClick()
+            compose.onNodeWithContentDescription("SSH transfer").activate()
             // The picker result is stubbed: use the same accessibility action to avoid
             // a touch landing during the native Dialog entrance animation.
             compose.onNodeWithText("Choose .term files…").performScrollTo().performSemanticsAction(
@@ -128,19 +175,25 @@ class TermTransferUiTest {
                         .fetchSemanticsNodes()
                         .isNotEmpty()
                 }
+                compose.waitUntil(30000) {
+                    compose
+                        .onAllNodes(hasText("Unlock and continue") and isEnabled())
+                        .fetchSemanticsNodes()
+                        .isNotEmpty()
+                }
                 compose.onNodeWithText("File password").performTextInput(password)
-                compose.onNodeWithText("Unlock and continue").performClick()
+                compose.onNodeWithText("Unlock and continue").activate()
             }
-            compose.waitUntil(10000) {
+            compose.waitUntil(60000) {
                 compose.onAllNodesWithText("Import preview").fetchSemanticsNodes().isNotEmpty()
             }
             compose.onNodeWithText("Unlock file 3 of 0").assertDoesNotExist()
             capturePreview()
-            compose.onNodeWithText("Import 2 connections").performScrollTo().performClick()
+            compose.onNodeWithText("Import 2 connections").performScrollTo().activate()
             compose.waitUntil(5000) {
                 compose.activity.workspace.servers.any { it.id == entries[0].server.id }
             }
-            compose.onNodeWithText("Select all").performScrollTo().performClick()
+            compose.onNodeWithText("Select all").performScrollTo().activate()
             compose
                 .onNodeWithText("File password (12+ characters)")
                 .performScrollTo()
@@ -149,8 +202,8 @@ class TermTransferUiTest {
                 .onNodeWithText("Repeat file password")
                 .performScrollTo()
                 .performTextInput(password)
-            compose.onNodeWithText("Export 2 connections").performScrollTo().performClick()
-            compose.waitUntil(15000) { output.exists() && output.length() > 64 }
+            compose.onNodeWithText("Export 2 connections").performScrollTo().activate()
+            compose.waitUntil(60000) { output.exists() && output.length() > 64 }
             val exported = TermArchive.decode(output.readBytes(), password)
             assertEquals(2, exported.size)
             assertTrue(exported.all { it.credentials == null })
@@ -164,7 +217,7 @@ class TermTransferUiTest {
                 .onNodeWithText("Repeat file password")
                 .performScrollTo()
                 .performTextInput(password)
-            compose.onNodeWithText("Share 2 connections").performScrollTo().performClick()
+            compose.onNodeWithText("Share 2 connections").performScrollTo().activate()
             compose.waitUntil(30000) {
                 Intents.getIntents().any { it.action == Intent.ACTION_CHOOSER }
             }
@@ -176,7 +229,7 @@ class TermTransferUiTest {
             val shared = context.contentResolver.openInputStream(sharedUri)!!.use { it.readBytes() }
             assertEquals(exported, TermArchive.decode(shared, password))
             assertFalse(send.hasExtra(Intent.EXTRA_TEXT))
-            compose.onNodeWithText("Done").performClick()
+            compose.onNodeWithText("Done").activate()
             assertTrue(compose.activity.workspace.sessions.isEmpty())
         } catch (e: Throwable) {
             compose

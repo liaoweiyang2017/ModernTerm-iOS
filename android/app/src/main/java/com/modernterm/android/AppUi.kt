@@ -72,7 +72,21 @@ fun ModernTermApp(vm: Workspace) {
         var delete by remember { mutableStateOf<Server?>(null) }
         var query by remember { mutableStateOf("") }
         var transfer by remember { mutableStateOf(false) }
-        if (transfer) TermTransferScreen(vm) { transfer = false }
+        LaunchedEffect(vm.incomingFiles) { if (vm.incomingFiles.isNotEmpty()) transfer = true }
+        SideEffect { vm.transferOpen = transfer }
+        if (transfer)
+            TermTransferScreen(vm, vm.incomingFiles) {
+                transfer = false
+                vm.incomingFiles = emptyList()
+            }
+        vm.incomingError?.let { message ->
+            AlertDialog(
+                onDismissRequest = { vm.incomingError = null },
+                title = { Text("Cannot open attachment") },
+                text = { Text(message) },
+                confirmButton = { TextButton(onClick = { vm.incomingError = null }) { Text("OK") } },
+            )
+        }
         val selected = vm.sessions.find { it.server.id == vm.selected }
         BackHandler(selected != null) { vm.selected = null }
         BoxWithConstraints(Modifier.fillMaxSize().statusBarsPadding()) {

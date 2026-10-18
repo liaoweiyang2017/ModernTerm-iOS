@@ -22,7 +22,7 @@ import java.util.UUID
 import kotlinx.coroutines.*
 
 @Composable
-fun TermTransferScreen(vm: Workspace, dismiss: () -> Unit) {
+fun TermTransferScreen(vm: Workspace, incoming: List<TermIncomingFile> = emptyList(), dismiss: () -> Unit) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var selected by remember { mutableStateOf(emptySet<String>()) }
@@ -34,8 +34,8 @@ fun TermTransferScreen(vm: Workspace, dismiss: () -> Unit) {
     var message by remember { mutableStateOf<String?>(null) }
     var exportError by remember { mutableStateOf<String?>(null) }
     var output by remember { mutableStateOf<ByteArray?>(null) }
-    var files by remember { mutableStateOf(emptyList<ByteArray>()) }
-    var fileNames by remember { mutableStateOf(emptyList<String>()) }
+    var files by remember { mutableStateOf(incoming.map { it.bytes }) }
+    var fileNames by remember { mutableStateOf(incoming.map { it.name }) }
     var mergedDuplicates by remember { mutableStateOf(0) }
     var fileIndex by remember { mutableStateOf(0) }
     var decoded by remember { mutableStateOf(emptyList<TermEntry>()) }

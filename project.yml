@@ -42,8 +42,10 @@ targets:
     info:
       path: Configuration/Info.plist
       properties:
+        LSSupportsOpeningDocumentsInPlace: true
         CFBundleDocumentTypes:
           - CFBundleTypeName: ModernTerm encrypted connections
+            CFBundleTypeRole: Viewer
             LSHandlerRank: Owner
             LSItemContentTypes: [com.modernterm.archive]
         UTExportedTypeDeclarations:
@@ -83,7 +85,10 @@ targets:
   ModerntermUITests:
     type: bundle.ui-testing
     platform: iOS
-    sources: [UITests]
+    sources:
+      - path: UITests
+      - path: shared/term-transfer/attachment.term
+        buildPhase: resources
     dependencies:
       - target: ModerntermIOS
 schemes:

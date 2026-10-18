@@ -2,7 +2,7 @@
 
 独立的原生 SwiftUI + UIKit SSH 客户端，沿用 Modernterm 的应用图标。AppKit 只适用于 macOS，因此移动端采用 UIKit 的 SwiftTerm 终端视图。当前版本 0.2.3，iOS / iPadOS 17+。
 
-[下载 0.2.3 (6) 安装包与校验文件](https://github.com/liaoweiyang2017/ModernTerm-iOS/releases/tag/v0.2.3-build6-sharing) · [本次验收记录](specs/006-transfer-sharing/validation.md)
+[下载 0.2.3 (6) 安装包与校验文件](https://github.com/liaoweiyang2017/ModernTerm-iOS/releases/tag/v0.2.3-build6-open-attachments) · [本次验收记录](specs/007-open-term-attachment/validation.md)
 
 2026-10-18：两端统一桌面最新版图标，版本仍为 0.2.3 (6)，并已更新到 iPhone。[图标与部署验收](specs/005-mobile-icon-alignment/validation.md)。
 
@@ -112,3 +112,5 @@ iOS 和 Android 顶部的 **SSH transfer** 支持多选导出、全选、多个 
 [格式与互通测试](shared/term-transfer/README.md) · [需求与验收](specs/004-term-transfer/spec.md) · [实际验证记录](specs/004-term-transfer/validation.md)。本次 iOS 只完成模拟器与构建验证，真机部署由用户后续执行。
 
 导出时可选 **Export N connections** 保存文件，或 **Share N connections** 打开系统分享面板，选择微信等已安装应用。微信未出现在第一屏时可点“更多”。分享的是加密 `.term` 附件，文件密码需另行告知接收方。短密码等错误会弹窗提示并保留输入。
+
+收到 `.term` 后：Android 在微信/文件管理器选择“用其他应用打开 → ModernTerm”；iOS 原生安装可选择 ModernTerm，自动进入文件密码和导入预览。当前 iPhone 的 LiveContainer 安装方式需“分享 → LiveContainer → ModernTerm”。解密后仍需确认导入，已有连接不会覆盖。请先完成或取消当前导入，再打开另一个附件。

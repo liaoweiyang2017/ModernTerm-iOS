@@ -42,6 +42,10 @@ struct TermTransferScreen: View {
   @State private var groups: [[TermEntry]] = []
   @State private var choices: [UUID: Int] = [:]
   @State private var copies = Set<UUID>()
+  init(incoming: TermIncomingFile? = nil) {
+    _files = State(initialValue: incoming.map { [$0.data] } ?? [])
+    _fileNames = State(initialValue: incoming.map { [$0.name] } ?? [])
+  }
   var ready: [TermEntry] {
     groups.compactMap { group in
       let id = group[0].server.id
