@@ -8,8 +8,9 @@ final class TermTransferUITests: XCTestCase {
     try Data(contentsOf: source).write(to: url)
     defer { try? FileManager.default.removeItem(at: url) }
     let app = XCUIApplication()
+    app.launch()
     app.terminate()
-    app.open(url)
+    XCUIDevice.shared.system.open(url)
     let unlock = app.secureTextFields["File password"]
     XCTAssertTrue(unlock.waitForExistence(timeout: 8), app.debugDescription)
     unlock.tap()

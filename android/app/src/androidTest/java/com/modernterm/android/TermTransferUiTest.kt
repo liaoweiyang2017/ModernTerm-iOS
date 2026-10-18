@@ -21,7 +21,9 @@ class TermTransferUiTest {
     // Exercise the exposed accessibility action independently of emulator touch animations.
     private fun SemanticsNodeInteraction.activate(): SemanticsNodeInteraction {
         compose.waitUntil(30000) { isEnabled().matches(fetchSemanticsNode()) }
-        return performSemanticsAction(androidx.compose.ui.semantics.SemanticsActions.OnClick) { it() }
+        return performSemanticsAction(androidx.compose.ui.semantics.SemanticsActions.OnClick) {
+            it()
+        }
     }
 
     private fun capturePreview() {
@@ -163,7 +165,15 @@ class TermTransferUiTest {
             compose.onNodeWithContentDescription("SSH transfer").activate()
             // The picker result is stubbed: use the same accessibility action to avoid
             // a touch landing during the native Dialog entrance animation.
-            compose.onNodeWithText("Choose .term files…").performScrollTo().performSemanticsAction(
+            compose
+                .onAllNodes(
+                    SemanticsMatcher.keyIsDefined(
+                        androidx.compose.ui.semantics.SemanticsActions.ScrollToIndex
+                    )
+                )
+                .onLast()
+                .performScrollToNode(hasText("Choose .term files…"))
+            compose.onNodeWithText("Choose .term files…").performSemanticsAction(
                 androidx.compose.ui.semantics.SemanticsActions.OnClick
             ) {
                 it()
