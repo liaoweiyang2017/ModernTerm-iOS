@@ -60,10 +60,13 @@ object TermIncomingFiles {
                 "This is not an encrypted .term file."
             }
             val name =
-                context.contentResolver
-                    .query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)
-                    ?.use { c -> if (c.moveToFirst()) c.getString(0) else null }
-                    ?: "Encrypted connections.term"
+                runCatching {
+                        context.contentResolver
+                            .query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)
+                            ?.use { c -> if (c.moveToFirst()) c.getString(0) else null }
+                    }
+                    .getOrNull()
+                    ?.take(255) ?: "Encrypted connections.term"
             TermIncomingFile(bytes, name)
         }
     }

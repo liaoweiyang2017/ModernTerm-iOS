@@ -106,7 +106,7 @@ class TermTransferUiTest {
                 .onNodeWithText("Repeat file password")
                 .performScrollTo()
                 .performTextInput("12345678")
-            compose.onNodeWithText("Export 1 connections").performScrollTo().activate()
+            compose.onNodeWithText("Export 1 connections").performScrollTo().assertIsEnabled().performClick()
             compose.waitUntil(5000) {
                 compose.onAllNodesWithText("Export failed").fetchSemanticsNodes().isNotEmpty()
             }

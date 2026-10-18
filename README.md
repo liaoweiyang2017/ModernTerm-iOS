@@ -1,116 +1,204 @@
-# ModernTerm — iOS / iPadOS / Android
+<p align="center">
+  <img src="shared/branding/Modernterm.png" width="112" alt="ModernTerm icon">
+</p>
 
-独立的原生 SwiftUI + UIKit SSH 客户端，沿用 Modernterm 的应用图标。AppKit 只适用于 macOS，因此移动端采用 UIKit 的 SwiftTerm 终端视图。当前版本 0.2.3，iOS / iPadOS 17+。
+<h1 align="center">ModernTerm</h1>
+<p align="center">手机上的 SSH 终端、Linux 监控与 SFTP 文件工作区</p>
+<p align="center">SwiftUI · Kotlin / Material 3 · iOS / iPadOS 17+ · Android 10+ · MIT</p>
 
-[下载 0.2.3 (6) 安装包与校验文件](https://github.com/liaoweiyang2017/ModernTerm-iOS/releases/tag/v0.2.3-build6-open-attachments) · [本次验收记录](specs/007-open-term-attachment/validation.md)
+ModernTerm 把远程终端、服务器状态和文件操作放在同一个移动工作区。它面向需要随时查看服务器、执行命令、修改配置或传输文件的开发者与运维人员。iOS 和 Android 分别采用原生界面，并通过加密 `.term` 文件交换连接配置。
 
-2026-10-18：两端统一桌面最新版图标，版本仍为 0.2.3 (6)，并已更新到 iPhone。[图标与部署验收](specs/005-mobile-icon-alignment/validation.md)。
+**当前版本：0.2.4（构建号 7）**。项目仍在持续完善，具体测试范围和限制见下文。
 
-## 平台入口
+[下载安装包](https://github.com/liaoweiyang2017/ModernTerm-iOS/releases/tag/v0.2.4) · [使用指南](#快速开始) · [源码构建](#从源码构建) · [反馈问题](https://github.com/liaoweiyang2017/ModernTerm-iOS/issues) · [桌面版 Modernterm](https://github.com/liaoweiyang2017/Modernterm)
 
-- iOS / iPadOS：仓库根目录 `ModerntermIOS.xcodeproj`，下文保留原iOS说明。
-- Android：独立 Kotlin / Compose Material 3 工程 [android/](android/README.md)，Android 10+，版本 0.2.3 (6)。
-- Android规范与逐项验收：[specs/003-android-material/](specs/003-android-material/spec.md)。
+## 为什么使用 ModernTerm
 
-## iOS 功能
+- **一个连接，三种工作方式。** 查看 Monitor、打开 Terminal、使用 SFTP，按任务切换；监控时无需先打开交互终端。
+- **保留平台习惯。** iPhone/iPad 使用 SwiftUI 与 UIKit；Android 使用 Kotlin、Jetpack Compose 和 Material 3，支持大屏布局及 Android 12+ 动态配色。
+- **连接配置随设备迁移。** 多选 SSH 连接，导出为完整加密的 `.term` 文件，可通过微信、邮件或系统分享发送，再在另一平台输入文件密码导入。
+- **服务器无需安装监控代理。** 通过已有 SSH 连接读取 Linux 系统信息；GPU、Docker 等指标在现有工具及权限允许时显示。
+- **凭据留在本地。** iOS 使用 Keychain，Android 使用 Keystore 保护凭据；无需注册项目账号，不依赖开发者的云同步服务，Android 不要求 Google Play Services。
+- **清晰且可维护。** 两个平台工程独立，复用协议、测试向量、配色和监控脚本；需求与验收文档随源码保存。自有代码采用 MIT 许可。
 
-- SSH 交互终端、最多 8 个会话、服务器收藏/编辑/分组信息。
-- 密码和 OpenSSH Ed25519 / RSA 私钥登录（支持私钥口令）；凭据使用 iOS Keychain `WhenUnlockedThisDeviceOnly`，正常读取不弹授权，不同步 iCloud。
-- 首次连接显示 SHA-256 主机指纹，确认后固定保存；指纹改变时拒绝连接。
-- SFTP 目录导航、文件上传、下载到系统分享/文件面板、多选删除（非空目录受保护）、UTF-8 文本编辑与冲突检查。
-- 原生终端键盘补充栏：Tab、Esc、Ctrl-C/D、方向键；18 个终端配色、字体大小、明暗主题。
-- Linux 主机/负载/内存/根分区信息、保存的宏命令、可选 OSC 7 目录跟随。
-- iPhone 自适应导航、iPad 会话侧栏；英文界面，后续可通过 String Catalog 本地化。
+## 功能一览
 
-## 平台差异和明确边界
+| 能力 | iOS / iPadOS | Android |
+| --- | --- | --- |
+| SSH 交互终端、最多 8 个会话 | SwiftTerm / UIKit | 本地打包 xterm.js / WebView |
+| 密码、RSA / Ed25519 私钥及私钥口令 | 支持 | 支持 |
+| RSA-SHA2 主机签名、SHA-256 指纹确认 | 支持 | 支持 |
+| 连接搜索、收藏、编辑、分组信息 | 支持 | 支持 |
+| SFTP 浏览、上传、下载、删除、UTF-8 编辑 | 支持 | 支持 |
+| Linux 监控、趋势图、多连接概览 | 支持 | 支持 |
+| 宏命令、可选 OSC 7 目录跟随 | 支持 | 支持 |
+| 18 套终端配色、Ubuntu Neo 自动明暗主题 | 支持 | 支持 |
+| `.term` 多选导出、批量导入、系统分享 | 支持 | 支持 |
+| 从其他应用打开 `.term` | 系统文档关联；LiveContainer 见下文 | 系统打开方式和分享接收 |
+| 本地凭据保护 | Keychain | Android Keystore |
 
-这是独立的移动实现，不是 macOS Qt 二进制移植或 WindTerm/MobaXterm 原代码移植。
+当前应用界面主要为英文。桌面项目与移动项目独立发布，本仓库不包含 Windows/macOS 安装包。
 
-- iOS 没有桌面本地 Shell；不会伪装提供系统终端。
-- 切到后台主动断开 SSH，前台手动重连；不宣称 iOS 可永久后台保活。
-- 首版不含 SSH 隧道、自动重连、桌面分屏、工作区恢复、传输断点续传、目录递归上传下载、自动读取 Mac 服务器凭据。
-- 目录同步需远端 Shell 发送匹配主机的 OSC 7 报告；不会偷偷改 shell 启动脚本。
-- 编辑仅限 UTF-8、2 MiB，保存前后核对原内容，临时文件写完后通过服务端 `mv -f --` 替换，要求远端提供该命令。比较与替换之间仍存在短暂竞态，SFTP 不提供事务锁；不适用于多人并发编辑。上传不覆盖同名目标。
-- 下载流式写本机临时目录，分享后可保存到“文件”；用户自己选择保存位置。不会自动使用或删除 iCloud 文件。
-- 服务器监控针对 Linux；其他系统可能显示部分指标或不支持。
+## 界面预览
 
-## 使用本机 Xcode
+以下为合成测试数据的导入预览，展示手机和平板布局，不包含真实服务器凭据。
 
-已使用 Xcode 27.1。打开 `ModerntermIOS.xcodeproj`，选择 `ModerntermIOS` scheme 和 iPhone / iPad 模拟器。
+| iOS | Android 手机 |
+| --- | --- |
+| <img src="specs/004-term-transfer/screenshots/ios-import.png" width="300" alt="iOS 导入预览"> | <img src="specs/004-term-transfer/screenshots/android-phone-import.png" width="300" alt="Android 导入预览"> |
 
-工程配置源是 `project.yml`，修改后运行 `xcodegen generate`。依赖锁定于 `ModerntermIOS.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved`。
+<details>
+<summary>Android 平板预览</summary>
+
+![Android 平板导入预览](specs/004-term-transfer/screenshots/android-tablet-import.png)
+
+</details>
+
+## 下载与安装
+
+请从 [v0.2.4 Release](https://github.com/liaoweiyang2017/ModernTerm-iOS/releases/tag/v0.2.4) 下载：
+
+| 文件 | 用途 |
+| --- | --- |
+| `ModernTerm-Android-0.2.4.apk` | Android 10+ 安装包 |
+| `ModernTerm-iOS-0.2.4.ipa` | iOS / iPadOS 安装包，需相应签名或 LiveContainer 环境 |
+| `SHA256SUMS.txt` | 安装包 SHA-256 校验值 |
+| `build-info.txt` | 源码提交、版本和构建信息 |
+
+### Android
+
+下载 APK 后，由系统安装器完成安装；首次安装可能需要允许所用下载应用安装软件。后续同签名 Release 可覆盖升级。Debug 包使用独立包名，数据不会与 Release 混用。终端需要可用的 Android System WebView，终端资源随应用打包，不从 CDN 加载。
+
+**华为 / 鸿蒙：** 仅适用于仍支持安装和运行 Android APK 的系统。Android 10 最低版本不代表兼容所有鸿蒙设备；原生 HarmonyOS/HAP 不在本项目范围，Mate 70 尚未进行实体机验收。
+
+### iOS / iPadOS
+
+- **Xcode 安装：** 从源码构建，选择自己的 Apple Development Team，按设备要求完成签名。
+- **LiveContainer：** 将 IPA 导入 LiveContainer，更新时选择替换原 ModernTerm，并核对使用原数据容器。不要删除原容器来处理更新问题。
+- Release IPA 不是 App Store 安装包，不能作为无需签名的独立应用直接安装。签名有效期和 LiveContainer 的维护由所用安装方式决定。
+
+## 快速开始
+
+1. 点击 **Add server**，填写 Host、Port 和 Username。Host 填域名或 IP，用户名单独填写；用户名中的 `@` 原样保留。
+2. 选择密码或私钥认证，保存连接。
+3. 首次连接核对服务器 **SHA-256 主机指纹**，确认可信后继续。已保存指纹发生变化时应用会拒绝连接，请先查明原因。
+4. 在 **Monitor / Terminal / SFTP** 间切换。终端提供 Tab、Esc、Ctrl 和方向键辅助栏。
+5. 使用 **Overview** 查看已打开连接的概览，使用设置调整主题、字体与监控间隔。
+
+应用进入后台时会断开连接，回到前台后手动重连。系统文件操作可有有限宽限期，但不提供永久后台保活。
+
+## 加密连接包：备份、分享与接收
+
+### 导出或分享
+
+1. 打开顶部 **SSH transfer**，选中一条或多条已保存连接，也可全选。
+2. 默认只导出配置。需要时勾选包含已保存的密码、私钥和私钥口令。
+3. 两次输入独立的文件密码，至少 12 个字符。
+4. 选择 **Export N connections** 保存到文件，或 **Share N connections** 打开系统分享面板，选择微信或其他已安装应用。
+
+整个 `.term` 文件都经过加密，包含的主机、用户名和凭据不会以明文保存。文件密码不会随附件发送，请通过另一种方式告知接收方；遗忘文件密码无法恢复。分享面板关闭不等于对方已收到文件。
+
+### 接收别人发来的 `.term`
+
+- **Android：** 在微信或文件管理器中选择“其他应用打开 → ModernTerm”，也可从系统分享面板选择 ModernTerm。
+- **iOS 原生安装：** 在文件的系统打开/分享选项中选择 ModernTerm。
+- **iOS LiveContainer：** 选择“分享 → 更多 → LiveContainer → ModernTerm”。系统识别的是宿主应用，需要多这一步。
+
+进入文件密码页后解密，检查 **Import preview**，再点击导入。也可以在应用内选择多个 `.term` 文件批量处理。
+
+每批最多 20 个文件，合计 16 MiB，最多 200 条连接。已有 UUID 默认跳过，可选择导入为新副本；冲突版本需明确选择，不自动覆盖现有连接。取消不修改连接，导入也不会自动连接服务器。主机信任记录不转移，首次连接仍需确认指纹。
+
+格式使用 AES-256-GCM 和 PBKDF2-HMAC-SHA256（600,000 次），文件密码采用 NFC 规范化。协议与跨平台合成测试向量见 [shared/term-transfer](shared/term-transfer/README.md)。
+
+## 监控与文件操作
+
+**Linux 监控**包含 CPU/逻辑核心、负载、内存/交换区、文件系统容量、磁盘读写/IOPS、网络收发/TCP、可用温度传感器，以及权限允许时的 NVIDIA、Docker 和进程统计。趋势图保留最近 60 个样本，仅存内存，采样间隔可选 5/10/30 秒。非 Linux 主机可能仅显示平台信息。
+
+**SFTP**支持目录浏览、文件上传下载、多选删除和最大 2 MiB 的 UTF-8 文本编辑。上传不覆盖同名目标；编辑会检查基线内容并通过临时文件替换，仍存在比较与替换之间的竞态，不是多人协作事务。非空目录受保护，不提供递归传输或断点续传。
+
+## 安全与隐私
+
+- iOS 凭据使用 `WhenUnlockedThisDeviceOnly` Keychain；Android 凭据使用 Keystore 保护，不将密码与普通连接配置混存。
+- SSH 首次指纹确认，指纹变化拒绝连接；支持 RSA-SHA2 主机签名，不启用 `ssh-rsa` / SHA-1 主机签名回退。
+- 应用不提供遥测、开发者云端凭据同步或监控数据上传。用户主动通过第三方应用分享的文件由所选应用处理。
+- 监控只使用现有权限，不执行 sudo、不安装代理、不自动调整 Docker 用户组。
+- 日志或 Issue 中不要提交密码、私钥、文件密码、真实连接导出包或未脱敏截图。
+- 测试目录中的密钥和 `.term` 均为合成数据，不应用于真实服务器。
+
+## 已知限制与常见问题
+
+- 没有本地 Shell、SSH 隧道、自动重连、永久后台运行、递归 SFTP 或工作区恢复。
+- GPU/Docker 指标依赖远端已有工具及权限；进程 CPU 指标是进程生命周期平均值。叠加网络接口可能重复计数，不适合作为计费依据。
+- OSC 7 目录跟随需要远端 Shell 主动报告路径，应用不会自动修改启动脚本。
+- **Android 终端键盘：** 点击固定的 **Keyboard** 按钮或轻点终端区域；辅助栏横向滚动不会隐藏键盘入口。0.2.4 修复了早于 SSH 通道创建的尺寸更新丢失，减少 `top` 等全屏程序的列折行问题。ColorOS 17 仍需实际机型复测。
+- **手机键盘不弹出：** 电脑端 Device Hub 预览可能使 iOS 进入外接键盘状态。退出电脑预览后，再点 Terminal 的键盘按钮。
+- **浅色界面但终端仍深色：** 确认终端配色选的是 `Ubuntu Neo (Auto)`；Dark/Light 为固定主题。
+- **文件打不开：** 先完成或取消当前传输，再重新打开；确认附件完整且文件密码正确。LiveContainer 按上文宿主转交路径操作。
+- 第三方聊天应用、OEM 文件管理器和不同鸿蒙系统不保证行为一致。实机系统附件交接已验证，但微信会话端到端收件未覆盖所有平台。
+
+## 从源码构建
 
 ```sh
+git clone https://github.com/liaoweiyang2017/ModernTerm-iOS.git
+cd ModernTerm-iOS
+```
+
+### iOS / iPadOS
+
+需要 macOS、支持项目 Swift 依赖的 Xcode 和 XcodeGen。工程配置源为 `project.yml`，依赖版本锁定在工程的 `Package.resolved` 中。
+
+```sh
+brew install xcodegen
 xcodegen generate
 xcodebuild -project ModerntermIOS.xcodeproj -scheme ModerntermIOS \
-  -destination 'generic/platform=iOS Simulator' -derivedDataPath build \
+  -destination 'generic/platform=iOS Simulator' \
+  -derivedDataPath "$HOME/Library/Caches/ModernTerm-build" \
   CODE_SIGNING_ALLOWED=YES CODE_SIGN_IDENTITY=- build
 ```
 
-SwiftTerm 固定为 1.18.0；1.20.0 的构建信息插件在本机 Xcode 的 iOS SDK 构建中错误定位宿主工具，因此选择不含该插件的稳定版本，不需要跳过插件验证。
+真机构建在 Xcode 中配置自己的签名团队。SwiftTerm 固定为 1.18.0，Citadel/NIOSSH 的局部兼容补丁与原因见 [Vendor/README.md](Vendor/README.md)。
 
-真机安装需要在 Xcode → Signing & Capabilities 选择自己的 Apple Development Team 和连接的 iPhone/iPad。未提供团队时只验证模拟器和未签名真机构建，不声称可直接分发 IPA 或已通过 App Store 审核。
+### Android
 
-## 测试与安全
+需要 JDK 17、Android SDK 36、Build Tools 35.0.0 和可用的 System WebView。配置 `ANDROID_HOME` 或本机忽略的 `android/local.properties`。
 
-`ModerntermTests` 验证会话校验、密码与配置分离、Keychain 读写、路径引用和配色。`Scripts/integration.py` 创建临时本机 OpenSSH 服务和一次性密钥，在模拟器验证 SSH/SFTP；不读取用户服务器、SSH 配置或密钥。
+```sh
+cd android
+./gradlew lintDebug testDebugUnitTest assembleDebug
+```
 
-代码保存在私有 GitHub 项目；Android 与 iOS 均配置 GitHub Actions，保留本机验证流程。生成目录、测试临时密钥和用户凭据不进入 Git。
+产物位于 `android/app/build/outputs/apk/debug/`。发布版需要自己的签名密钥；不要提交 keystore 或签名密码。终端资源、共享资源同步和签名步骤见 [Android 开发说明](android/README.md)。
 
-第三方依赖：SwiftTerm（MIT）、Citadel（MIT）、SwiftNIO/NIOSSH/Crypto（Apache 2.0）、终端配色及对应来源。详见 `Resources/ThirdParty.txt` 和 `Resources/PaletteProvenance.json`。应用自有代码暂保留所有权利，不提供公共开源许可。
+## 测试与发布方式
 
-## 0.2.0 手机监控工作区
+**本项目采用本地测试、构建和 GitHub Release 发布，不使用 GitHub Actions。** 历史验收中的 CI 记录仅代表当时的结果。
 
-连接后默认进入 Monitor，SSH 终端和 SFTP 通道仅在切换到对应页时建立。底部 Overview 汇总最多 8 个已打开连接；点击某台服务器查看详细数据。
+- iOS：在 Xcode 中运行 `ModerntermTests` / `ModerntermUITests`，或用 `xcodebuild test` 指定可用模拟器。
+- Android：运行 JVM/lint 检查及 `connectedDebugAndroidTest`；SSH 集成测试先启动 [隔离测试服务器](android/README.md#integration-tests)。
+- SSH/SFTP 集成脚本创建一次性测试凭据，不读取开发者的真实 SSH 配置或私钥。
+- `.term` 测试覆盖格式互通、密码失败、数据边界、去重冲突、存储恢复和系统文件交接；模拟器通过不等于所有实体机通过。
 
-- CPU 总使用率、逻辑核心、型号、系统/内核/架构、负载与运行时间。
-- 内存（以 MemAvailable 计算）、交换区、可用时的温度传感器。
-- 本地文件系统容量、各磁盘/分区读写速度与 IOPS。
-- 各网络接口收发速度/累计流量、TCP in-use 和 TIME_WAIT；排除 lo、veth、docker 和 br-*，其他叠加接口可能重复，不能据此计费。
-- 可用时的 NVIDIA 利用率、显存、温度；只读取已有 nvidia-smi。
-- Docker 只读统计；需要用户现有权限，不执行 sudo、不更改组或启动/停止容器。
-- CPU 平均占用最高的 12 个进程，仅采集命令名，不采集命令参数；ps 显示的是进程生命周期平均值，不是采样间隔瞬时值。
-- 原生趋势图保留最近 60 个样本，仅存内存；5/10/30 秒间隔可选，后台断开，重新连接重新采样。
+[0.2.4 发布规范与验收](specs/008-public-release/validation.md) · [附件接收实机记录](specs/007-open-term-attachment/validation.md) · [跨平台格式验收](specs/004-term-transfer/validation.md)
 
-通过 SSH 读取 Linux /proc 和 /sys，未在服务器安装程序。参考 [ServerCat 官方说明](https://servercat.app/en/faq) 的无代理采集方式，自行实现采集、计算与 SwiftUI 界面。非 Linux 仅显示平台信息，SSH/SFTP 仍可用。CPU/网络/I/O 首次采样、重启或计数回退不显示伪造速率。命令响应限制 256 KiB；有 timeout 时整次采集限制 9 秒，GPU/Docker 子命令各 3 秒。无 timeout 时不运行可选 GPU/Docker 命令；基础采集依赖服务器普通系统命令正常返回。
+## 目录结构
 
-监控数据不会上传到开发者、GitHub 或 iCloud。最多展示 512 个核心计数、32 个文件系统/容器和 256 条磁盘计数。
+```text
+Sources/                 iOS 应用与 SSH/SFTP/传输实现
+Resources/               iOS 资源、配色与第三方声明
+Tests/、UITests/           iOS 单元和界面测试
+android/                 Kotlin / Compose 应用与本地构建脚本
+shared/                  加密格式向量、共享图标等资源
+Vendor/                  固定的 Swift SSH 依赖与兼容补丁
+Scripts/                 iOS 集成测试和资源生成工具
+specs/                   需求、方案、任务与验收记录
+```
 
-Debug 专用参数 `--monitor-preview` 可展示明确标注的模拟数据，方便检查小屏布局；不读取凭据、不连接服务器、不保存会话，Release 构建不包含此预览。正式启动不传此参数。
+## 贡献与反馈
 
-## 0.2.1 LiveContainer 与 Mac 会话迁移
+欢迎提交可复现的问题和范围清晰的 PR。报告问题时写明平台、系统版本、应用版本、安装方式、复现步骤和预期结果，并脱敏日志。新功能先说明需求与边界，再给出最小方案；保持平台原生交互，避免为单一功能引入大型框架。提交前运行与改动相关的测试，并同步更新验收记录。
 
-已提供一次性 USB 迁移入口：将受保护的 `ModernTerm-Mac-Import.json` 放入 ModernTerm 自己的数据容器 Documents，启动或回到前台时导入；也可在 Settings → Mac migration 中触发。文件结构为版本 1 的 `MacMigration`，只合并新 UUID，保留现有条目，密码/私钥写入 iOS Keychain。成功后删除输入文件并留下不含凭据的统计回执；失败保留输入文件，不宣称成功。不要把该迁移文件放入仓库、IPA 或云端。
+## 许可证与致谢
 
-LiveContainer 部署使用正常 Release arm64 `.app` 的 `Payload` IPA；LiveContainer 自己完成签名及沙箱处理。已验证 iPhone 17 / iOS 27.2 / LiveContainer 3.8.10 可启动并完成 Keychain 凭据迁移。该部署不等同于 App Store 安装，不替代 LiveContainer/SideStore 的签名有效期维护。
+项目自有代码使用 [MIT License](LICENSE)，允许使用、修改和商业分发，需保留版权与许可声明。第三方依赖及素材继续适用各自许可。
 
-
-## 0.2.2 系统键盘修复
-
-终端加入 UIKit 窗口后再申请键盘焦点，切到 Terminal 自动唤起系统输入；右上角提供 Show keyboard，下方辅助按键栏提供收起按钮。监控刷新不会抢回已经收起的键盘，离开终端页时释放焦点。
-
-LiveContainer 更新时可能给替换应用创建新的空数据容器。更新前记录现有容器，更新后核对并重新选择原容器，不要删除原数据或重复导入。应用配置和 Keychain 的隔离标识都与容器有关。
-
-## 0.2.3 RSA-SHA2 网关兼容
-
-支持仅提供 RSA 主机密钥的网关，使用 rsa-sha2-256/512 校验主机签名，保持指纹固定验证；不启用 ssh-rsa/SHA-1 主机签名回退。用户名中的 @ 原样传递。连接失败显示协商、认证、网络或未知阶段，不再只显示 NIOSSH error 1。
-
-SFTP 子系统被拒绝时结束初始化并关闭该子通道，已有终端连接保持可用。依赖固定源码及局部补丁说明见 Vendor/README.md。
-
-额外测试命令：在隔离 Python venv 安装 `paramiko==4.0.0` 后执行 `python Scripts/password_integration.py`，同时运行原 OpenSSH 回归。可通过 `MODERNTERM_DERIVED_DATA` 指定复用构建目录。`python3 Scripts/gateway_probe.py HOST` 只做显式指定服务器的握手检查，主动拒绝主机验证且不发送凭据，不代表登录验收。
-
-### 自动主题与手机键盘
-
-`Ubuntu Neo (Auto)` 跟随应用有效浅色/深色外观；`Ubuntu Neo Dark` 和 `Ubuntu Neo Light` 为固定配色。若应用界面已变浅但终端仍深色，先核对 Terminal colors 是否选中 Auto。
-
-电脑 Device Hub 手机预览可能使系统进入外接键盘状态，即使 Capture Keyboard 已关闭，也可能仅显示辅助栏。若手机系统文字键盘不弹出，退出电脑端 Device Hub，再在手机终端点击右上角键盘按钮。本次真机对照由用户确认恢复；不需要改密码、重建会话或重装输入法。
-
-## 0.2.3 (6) 跨平台加密 SSH 连接包
-
-iOS 和 Android 顶部的 **SSH transfer** 支持多选导出、全选、多个 `.term` 文件批量导入。默认仅配置，可选包含保存的密码、私钥和口令；整个文件由独立密码加密，不能直接用文本查看连接信息。导入先预览，已有 UUID 默认跳过，可作为新副本导入；主机信任不转移，也不会自动连接。文件密码至少 12 个字符，遗忘无法恢复。
-
-[格式与互通测试](shared/term-transfer/README.md) · [需求与验收](specs/004-term-transfer/spec.md) · [实际验证记录](specs/004-term-transfer/validation.md)。本次 iOS 只完成模拟器与构建验证，真机部署由用户后续执行。
-
-导出时可选 **Export N connections** 保存文件，或 **Share N connections** 打开系统分享面板，选择微信等已安装应用。微信未出现在第一屏时可点“更多”。分享的是加密 `.term` 附件，文件密码需另行告知接收方。短密码等错误会弹窗提示并保留输入。
-
-收到 `.term` 后：Android 在微信/文件管理器选择“用其他应用打开 → ModernTerm”；iOS 原生安装可选择 ModernTerm，自动进入文件密码和导入预览。当前 iPhone 的 LiveContainer 安装方式需“分享 → LiveContainer → ModernTerm”。解密后仍需确认导入，已有连接不会覆盖。请先完成或取消当前导入，再打开另一个附件。
+感谢 SwiftTerm、Citadel、SwiftNIO/NIOSSH、Swift Crypto、SSHJ、Bouncy Castle、xterm.js、AndroidX/Compose 及配色项目。详见 [iOS 第三方声明](Resources/ThirdParty.txt)、[Android 第三方声明](android/app/src/main/assets/licenses/NOTICE.txt)、[终端许可](android/app/src/main/assets/terminal/XTERM-LICENSE)和[图标来源](shared/branding/README.md)。

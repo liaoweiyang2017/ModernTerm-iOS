@@ -98,6 +98,16 @@ class WorkspaceUiTest {
                     .terminal
                     ?.isReady == true
             }
+            compose
+                .onAllNodes(
+                    SemanticsMatcher.keyIsDefined(
+                        androidx.compose.ui.semantics.SemanticsProperties.HorizontalScrollAxisRange
+                    )
+                )
+                .onLast()
+                .performSemanticsAction(androidx.compose.ui.semantics.SemanticsActions.ScrollBy) {
+                    it(2000f, 0f)
+                }
             compose.onNodeWithText("Keyboard").assertIsDisplayed().performClick()
             val screen = java.util.concurrent.atomic.AtomicReference("")
             compose.waitUntil(10000) {

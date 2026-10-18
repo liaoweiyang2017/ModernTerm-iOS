@@ -5,6 +5,19 @@ struct TermIncomingFile: Identifiable {
   let data: Data
   let name: String
 
+  static func readBatch(_ urls: [URL]) throws -> [TermIncomingFile] {
+    guard !urls.isEmpty, urls.count <= 20 else { throw AppError.message("Choose 1–20 files.") }
+    var total = 0
+    return try urls.map { url in
+      let file = try read(url)
+      total += file.data.count
+      guard total <= TermArchive.maximum else {
+        throw AppError.message("Selected files exceed 16 MiB.")
+      }
+      return file
+    }
+  }
+
   static func read(_ url: URL) throws -> TermIncomingFile {
     guard url.isFileURL else { throw AppError.message("Open a local .term attachment.") }
     let access = url.startAccessingSecurityScopedResource()

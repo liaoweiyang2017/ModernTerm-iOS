@@ -69,8 +69,10 @@ class Server(paramiko.ServerInterface):
  def check_auth_publickey(self,user,key):return paramiko.AUTH_SUCCESSFUL if user==username and key.get_base64() in public else paramiko.AUTH_FAILED
  def get_allowed_auths(self,user):return 'password,publickey'
  def check_channel_request(self,kind,channel):return paramiko.OPEN_SUCCEEDED if kind=='session' else paramiko.OPEN_FAILED_ADMINISTRATIVELY_PROHIBITED
- def check_channel_pty_request(self,*args):return True
- def check_channel_window_change_request(self,*args):return True
+ def check_channel_pty_request(self,channel,term,width,height,*args):
+  self.dimensions=(width,height);return True
+ def check_channel_window_change_request(self,channel,width,height,*args):
+  self.dimensions=(width,height);return True
  def check_channel_shell_request(self,channel):
   def echo():
    try:
@@ -78,7 +80,8 @@ class Server(paramiko.ServerInterface):
     while True:
      data=channel.recv(8192)
      if not data:break
-     channel.send(data)
+     if data==b"\x1b[?9001n":channel.send(("SIZE=%d,%d\n" % self.dimensions).encode())
+     else:channel.send(data)
    except Exception:pass
   threading.Thread(target=echo,daemon=True).start();return True
  def check_channel_exec_request(self,channel,command):

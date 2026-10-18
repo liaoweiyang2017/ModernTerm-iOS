@@ -1,6 +1,6 @@
 # ModernTerm for Android
 
-Kotlin + Jetpack Compose / Material 3. Version **0.2.3 (6)**, `minSdk 29` (Android 10), `compileSdk/targetSdk 36`. The release package is `com.modernterm.android`; debug builds use `.debug` and have separate data.
+Kotlin + Jetpack Compose / Material 3. Version **0.2.4 (7)**, `minSdk 29` (Android 10), `compileSdk/targetSdk 36`. The release package is `com.modernterm.android`; debug builds use `.debug` and have separate data.
 
 ## Features
 
@@ -43,15 +43,13 @@ A release APK must use the fixed signing identity. Locally it is kept outside Gi
 
 `JAVA_HOME=... python3 android/scripts/build_release.py` builds with that identity. Alternatively provide `MT_STORE_FILE`, `MT_STORE_PASSWORD`, and `MT_KEY_ALIAS` to Gradle. CI uses encrypted repository secrets `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, and `ANDROID_KEY_ALIAS`; no signing secrets are provided to PR jobs. A first install may require enabling installation from the selected download source on the phone. No root is required.
 
-The installable release APK and SHA-256 file are delivered in the private repository's Android release and as local build artifacts. GitHub access is required to download private release attachments. Debug and release packages do not overwrite one another.
+The installable release APK and SHA-256 file are delivered in the repository's v0.2.4 Release and as local build artifacts. Debug and release packages do not overwrite one another.
 
-## CI and limits
+## Local verification and limits
 
-`.github/workflows/android-ci.yml` compiles, lints, runs JVM tests and API 29/36 emulator integration tests. Successful non-PR runs also build a signed release. It uses minimal token permissions and actions pinned to commit hashes.
+Builds and tests run locally; GitHub Actions is disabled. Before publishing run JVM tests, lint and API 29/36 emulator integration tests, then build a signed APK with the fixed release identity. Record the producing commit and checksums in the GitHub Release. Do not distribute instrumentation APKs or generated SSH fixture credentials.
 
-At implementation time the account's Actions artifact storage quota was exhausted. Artifact-upload steps therefore report a warning without hiding build/test failures. Test outcomes remain in run logs/step summaries. Installable APK delivery uses a repository Release attachment/local file; this does not require deleting artifacts from unrelated projects. Normal artifact uploads resume when the account has available storage.
-
-Simulation does not prove Huawei ROM, actual ARM phones, third-party keyboards or HarmonyOS compatibility. See `../specs/003-android-material/validation.md` for actual evidence and remaining verification limits.
+Simulation does not prove Huawei ROM, actual ARM phones, third-party keyboards or HarmonyOS compatibility. See [0.2.4 validation](../specs/008-public-release/validation.md) for current evidence and remaining limits. Historical CI links in older specs refer to past releases.
 
 ## Scope limits
 

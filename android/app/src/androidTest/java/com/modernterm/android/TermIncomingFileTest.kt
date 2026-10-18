@@ -42,7 +42,8 @@ class TermIncomingFileTest {
                 .putExtra(Intent.EXTRA_STREAM, uri(file))
                 .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         val before = LocalStore(context).servers().size
-        ActivityScenario.launch<MainActivity>(intent).use {
+        ActivityScenario.launch<MainActivity>(intent).use { scenario ->
+            scenario.recreate()
             compose.waitUntil(8000) {
                 compose.onAllNodesWithText("Unlock and continue").fetchSemanticsNodes().isNotEmpty()
             }

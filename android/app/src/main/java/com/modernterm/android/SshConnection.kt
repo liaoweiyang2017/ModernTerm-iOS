@@ -46,6 +46,7 @@ class SshConnection : Closeable {
 
     @Volatile private var client: SSHClient? = null
     private var terminalSession: Session? = null
+    private var terminalSize: Pair<Int, Int>? = null
     @Volatile private var shell: Session.Shell? = null
     private var files: SFTPClient? = null
     val connected: Boolean
@@ -100,14 +101,8 @@ class SshConnection : Closeable {
             }
         val session = requireClient().startSession()
         try {
-            session.allocatePTY(
-                "xterm-256color",
-                cols.coerceAtLeast(1),
-                rows.coerceAtLeast(1),
-                0,
-                0,
-                emptyMap(),
-            )
+            val size = terminalSize ?: (cols.coerceAtLeast(1) to rows.coerceAtLeast(1))
+            session.allocatePTY("xterm-256color", size.first, size.second, 0, 0, emptyMap())
             val channel = session.startShell()
             terminalSession = session
             shell = channel
@@ -126,8 +121,13 @@ class SshConnection : Closeable {
         }
     }
 
+    @Synchronized
     fun resize(cols: Int, rows: Int) {
-        shell?.changeWindowDimensions(cols.coerceAtLeast(1), rows.coerceAtLeast(1), 0, 0)
+        // A WebView can finish layout before SSH has finished creating its PTY.
+        // Keep that measurement and serialize it with openShell to avoid losing it.
+        val size = cols.coerceAtLeast(1) to rows.coerceAtLeast(1)
+        terminalSize = size
+        shell?.changeWindowDimensions(size.first, size.second, 0, 0)
     }
 
     fun execute(command: String, maxBytes: Int = 262144): String =

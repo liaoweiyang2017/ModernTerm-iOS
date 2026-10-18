@@ -9,7 +9,7 @@ import androidx.activity.viewModels
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ProcessLifecycleOwner
-import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.*
 
 class MainActivity : ComponentActivity() {
@@ -50,11 +50,12 @@ class MainActivity : ComponentActivity() {
             return
         }
         workspace.receivingFile = true
-        lifecycleScope.launch {
+        val context = applicationContext
+        workspace.viewModelScope.launch {
             try {
                 val uris = TermIncomingFiles.uris(intent)
                 workspace.incomingFiles =
-                    withContext(Dispatchers.IO) { TermIncomingFiles.read(this@MainActivity, uris) }
+                    withContext(Dispatchers.IO) { TermIncomingFiles.read(context, uris) }
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {

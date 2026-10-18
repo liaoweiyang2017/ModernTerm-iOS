@@ -60,6 +60,7 @@ struct RootScreen: View {
   @State private var macros = false
   @State private var transfer = false
   @State private var incomingFile: TermIncomingFile?
+  @State private var readingAttachment = false
   @State private var deleteServer: Server?
   @State private var error: String?
   var filtered: [Server] {
@@ -156,15 +157,27 @@ struct RootScreen: View {
     .sheet(isPresented: $settings) { SettingsScreen() }
     .sheet(isPresented: $transfer) { TermTransferScreen() }
     .sheet(item: $incomingFile) { file in TermTransferScreen(incoming: file) }
+    .overlay {
+      if readingAttachment {
+        ProgressView("Opening attachment…").padding().background(
+          .regularMaterial, in: RoundedRectangle(cornerRadius: 12))
+      }
+    }
     .onOpenURL { url in
-      guard incomingFile == nil && !transfer && editing == nil && !settings && !overview && !macros
+      guard
+        !readingAttachment && incomingFile == nil && !transfer && editing == nil && !settings
+          && !overview && !macros
       else {
         error = "Finish or cancel the current screen, then open the attachment again."
         return
       }
-      do {
-        incomingFile = try TermIncomingFile.read(url)
-      } catch { self.error = error.localizedDescription }
+      readingAttachment = true
+      Task {
+        defer { readingAttachment = false }
+        do {
+          incomingFile = try await Task.detached { try TermIncomingFile.read(url) }.value
+        } catch { self.error = error.localizedDescription }
+      }
     }
     .sheet(isPresented: $macros) {
       MacrosScreen(session: workspace.sessions.first(where: { $0.id == workspace.selected }))

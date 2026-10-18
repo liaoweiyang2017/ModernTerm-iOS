@@ -23,7 +23,7 @@ android/local.properties
 android/**/build/
 *.jks
 *.keystore
-android/app/src/androidTest/assets/ssh-fixture.json
+android/app/src/androidTest/assets/ssh-fixture*.json
 android/terminal/node_modules/
 
 android/dist/

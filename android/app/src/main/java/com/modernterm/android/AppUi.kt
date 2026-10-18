@@ -79,6 +79,14 @@ fun ModernTermApp(vm: Workspace) {
                 transfer = false
                 vm.incomingFiles = emptyList()
             }
+        if (vm.receivingFile) {
+            AlertDialog(
+                onDismissRequest = {},
+                title = { Text("Opening attachment…") },
+                text = { LinearProgressIndicator(Modifier.fillMaxWidth()) },
+                confirmButton = {},
+            )
+        }
         vm.incomingError?.let { message ->
             AlertDialog(
                 onDismissRequest = { vm.incomingError = null },
@@ -665,31 +673,33 @@ private fun TerminalScreen(vm: Workspace, s: ConnectionState, dark: Boolean, mod
         .forEachIndexed { i, key -> theme.put(key, ansi.getString(i)) }
     LaunchedEffect(s.connected) { if (s.connected) vm.shell(s) }
     Column(modifier) {
-        Row(
-            Modifier.horizontalScroll(rememberScrollState()),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             TextButton(onClick = { s.terminal?.showKeyboard() }) { Text("Keyboard") }
-            TextButton(onClick = { s.terminal?.hideKeyboard() }) { Text("Hide") }
-            TextButton(onClick = { s.terminal?.copyAll() }) { Text("Copy all") }
-            TextButton(onClick = { s.terminal?.pasteClipboard() }, enabled = s.connected) {
-                Text("Paste")
-            }
-            listOf(
-                    "Esc" to "\u001b",
-                    "Tab" to "\t",
-                    "Ctrl-C" to "\u0003",
-                    "Ctrl-D" to "\u0004",
-                    "↑" to "\u001b[A",
-                    "↓" to "\u001b[B",
-                    "←" to "\u001b[D",
-                    "→" to "\u001b[C",
-                )
-                .forEach { (label, bytes) ->
-                    TextButton(onClick = { vm.send(s, bytes) }, enabled = s.connected) {
-                        Text(label)
-                    }
+            Row(
+                Modifier.weight(1f).horizontalScroll(rememberScrollState()),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                TextButton(onClick = { s.terminal?.hideKeyboard() }) { Text("Hide") }
+                TextButton(onClick = { s.terminal?.copyAll() }) { Text("Copy all") }
+                TextButton(onClick = { s.terminal?.pasteClipboard() }, enabled = s.connected) {
+                    Text("Paste")
                 }
+                listOf(
+                        "Esc" to "\u001b",
+                        "Tab" to "\t",
+                        "Ctrl-C" to "\u0003",
+                        "Ctrl-D" to "\u0004",
+                        "↑" to "\u001b[A",
+                        "↓" to "\u001b[B",
+                        "←" to "\u001b[D",
+                        "→" to "\u001b[C",
+                    )
+                    .forEach { (label, bytes) ->
+                        TextButton(onClick = { vm.send(s, bytes) }, enabled = s.connected) {
+                            Text(label)
+                        }
+                    }
+            }
         }
         AndroidView(
             factory = { ctx ->
@@ -702,8 +712,8 @@ private fun TerminalScreen(vm: Workspace, s: ConnectionState, dark: Boolean, mod
                     .also { view ->
                         s.terminal = view
                         view.onReady = {
-                            view.write(s.terminalBytes)
                             view.setAppearance(theme, vm.preferences.fontSize)
+                            view.write(s.terminalBytes)
                             view.showKeyboard()
                         }
                     }
@@ -878,7 +888,10 @@ private fun SettingsScreen(vm: Workspace, modifier: Modifier) {
         }
         item {
             HorizontalDivider()
-            Text("ModernTerm 0.2.3 · Android", style = MaterialTheme.typography.titleMedium)
+            Text(
+                "ModernTerm ${BuildConfig.VERSION_NAME} · Android",
+                style = MaterialTheme.typography.titleMedium,
+            )
             TextButton(onClick = { showLicenses = true }) { Text("Open-source notices") }
             Text(
                 "Android 10+ · No Google services required\nConnections close when you leave the app. No permanent background sessions.\nHarmonyOS / Mate 70: not verified on a physical device.",

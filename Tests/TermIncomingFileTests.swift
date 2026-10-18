@@ -6,6 +6,9 @@ final class TermIncomingFileTests: XCTestCase {
   func testBoundedLocalAttachmentRead() throws {
     let source = try XCTUnwrap(
       Bundle(for: Self.self).url(forResource: "reference", withExtension: "term"))
+    XCTAssertEqual(try TermIncomingFile.readBatch([source, source]).count, 2)
+    XCTAssertThrowsError(try TermIncomingFile.readBatch([]))
+    XCTAssertThrowsError(try TermIncomingFile.readBatch(Array(repeating: source, count: 21)))
     let file = try TermIncomingFile.read(source)
     XCTAssertEqual(try TermArchive.decode(file.data, password: "互通测试-café-🔐-2026").count, 2)
     XCTAssertThrowsError(

@@ -24,6 +24,37 @@ class PlatformGateTest {
         )
 
     @Test
+    fun terminalSizeBeforeShellIsNotLost() {
+        val f = fixture()
+        SshConnection().use { c ->
+            c.connect(
+                Server(
+                    host = f.getString("host"),
+                    port = f.getInt("port"),
+                    user = f.getString("user"),
+                ),
+                Credentials(password = f.getString("password")),
+            ) {
+                it == f.getString("fingerprint")
+            }
+            c.resize(43, 17)
+            val stream = c.openShell(80, 24)
+            c.send("\u001b[?9001n".toByteArray())
+            val text = StringBuilder()
+            val bytes = ByteArray(128)
+            while (!text.contains("SIZE=")) {
+                val n = stream.read(bytes)
+                assertTrue(n > 0)
+                text.append(String(bytes, 0, n))
+            }
+            assertTrue(
+                "Latest measured dimensions must reach the initial PTY: $text",
+                text.contains("SIZE=43,17"),
+            )
+        }
+    }
+
+    @Test
     fun passwordRsaSha2AtUsernameAndSftp() {
         val f = fixture()
         val server =

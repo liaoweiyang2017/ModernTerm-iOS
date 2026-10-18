@@ -172,7 +172,7 @@ struct TermTransferScreen: View {
             Button("Cancel import", role: .cancel) { reset() }
           }
         }
-        if busy && !files.isEmpty { ProgressView("Processing encrypted file…") }
+        if busy { ProgressView("Processing encrypted file…") }
         if let message { Text(message).foregroundStyle(.secondary) }
       }
       .disabled(busy)
@@ -219,22 +219,21 @@ struct TermTransferScreen: View {
           guard !urls.isEmpty, urls.count <= 20 else {
             throw AppError.message("Choose 1–20 files.")
           }
-          var total = 0
-          let read = try urls.map { url in
-            let access = url.startAccessingSecurityScopedResource()
-            defer { if access { url.stopAccessingSecurityScopedResource() } }
-            let handle = try FileHandle(forReadingFrom: url)
-            defer { try? handle.close() }
-            let data = try handle.read(upToCount: TermArchive.maximum + 1) ?? Data()
-            total += data.count
-            guard total <= TermArchive.maximum else {
-              throw AppError.message("Selected files exceed 16 MiB.")
-            }
-            return data
-          }
           reset()
-          files = read
-          fileNames = urls.map { $0.lastPathComponent }
+          busy = true
+          let token = operation
+          Task {
+            do {
+              let read = try await Task.detached { try TermIncomingFile.readBatch(urls) }.value
+              guard token == operation else { return }
+              files = read.map(\.data)
+              fileNames = read.map(\.name)
+            } catch {
+              guard token == operation else { return }
+              message = error.localizedDescription
+            }
+            busy = false
+          }
         } catch {
           reset()
           message = error.localizedDescription

@@ -16,6 +16,18 @@ class TerminalPane(
     private val directory: (String) -> Unit = {},
 ) : WebView(context) {
     private var loaded = false
+    private var keyboardRequested = false
+    private var lastAppearance: String? = null
+    private val taps =
+        android.view.GestureDetector(
+            context,
+            object : android.view.GestureDetector.SimpleOnGestureListener() {
+                override fun onSingleTapUp(event: android.view.MotionEvent): Boolean {
+                    showKeyboard()
+                    return false
+                }
+            },
+        )
     private var disposed = false
     val isReady: Boolean
         get() = loaded
@@ -33,6 +45,8 @@ class TerminalPane(
                 android.view.ViewGroup.LayoutParams.MATCH_PARENT,
             )
         settings.javaScriptEnabled = true
+        settings.textZoom = 100
+        settings.setSupportZoom(false)
         settings.allowFileAccess = false
         settings.allowContentAccess = false
         settings.domStorageEnabled = false
@@ -100,6 +114,7 @@ class TerminalPane(
                         write(pending.toByteArray())
                         pending.reset()
                         onReady?.invoke()
+                        if (keyboardRequested) showKeyboard()
                     }
                 }
             },
@@ -121,17 +136,36 @@ class TerminalPane(
     }
 
     fun setAppearance(theme: JSONObject, size: Int) {
-        if (loaded) evaluateJavascript("appearance($theme,$size)", null)
+        val value = "$theme,$size"
+        if (loaded && value != lastAppearance) {
+            lastAppearance = value
+            evaluateJavascript("appearance($value)", null)
+        }
+    }
+
+    override fun onTouchEvent(event: android.view.MotionEvent): Boolean {
+        taps.onTouchEvent(event)
+        return super.onTouchEvent(event)
     }
 
     fun showKeyboard() {
+        keyboardRequested = true
+        if (!loaded || disposed) return
         requestFocus()
-        evaluateJavascript("focusInput()", null)
-        (context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager)
-            .showSoftInput(this, InputMethodManager.SHOW_IMPLICIT)
+        // WebView's editor connection is ready only after the DOM textarea is focused.
+        evaluateJavascript("focusInput()") {
+            post {
+                if (!disposed && keyboardRequested && hasWindowFocus()) {
+                    (context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager)
+                        .showSoftInput(this, InputMethodManager.SHOW_IMPLICIT)
+                }
+            }
+        }
     }
 
     fun hideKeyboard() {
+        keyboardRequested = false
+        if (loaded && !disposed) evaluateJavascript("term.blur()", null)
         (context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager)
             .hideSoftInputFromWindow(windowToken, 0)
         clearFocus()
