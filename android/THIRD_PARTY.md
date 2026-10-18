@@ -12,6 +12,6 @@ The app does not include Termux or GPL terminal app code. App-owned sources keep
 - esbuild 0.25.5 — MIT, build-time only. Rebuild bundled terminal assets from android/terminal with the committed pnpm lockfile; target Chrome 70 syntax for older Android 10 WebViews.
 - Test tools JUnit, AndroidX Test and Paramiko are not included in the release APK.
 
-Full common license texts are packaged in app/src/main/assets/licenses. iOS-owned palettes retain Resources/PaletteProvenance.json attribution; monitor.sh is generated from Sources/ServerMetrics.swift by scripts/sync_shared.py.
+Full common license texts are packaged in app/src/main/assets/licenses. iOS-owned palettes retain ios/Resources/PaletteProvenance.json attribution; monitor.sh is generated from ios/Sources/ServerMetrics.swift by scripts/sync_shared.py.
 
 Palette source hashes and the pinned iTerm2-Color-Schemes license are included in assets/licenses/PaletteProvenance.json and PALETTES-LICENSE.txt.

@@ -192,7 +192,7 @@
 				7ED26D46896C3E4537C33AEF /* reference.term */,
 			);
 			name = "term-transfer";
-			path = "shared/term-transfer";
+			path = "../shared/term-transfer";
 			sourceTree = "<group>";
 		};
 		52BE9A17DA6C11D8D053FC08 /* Tests */ = {

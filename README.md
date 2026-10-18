@@ -147,10 +147,11 @@ cd ModernTerm-iOS
 
 ### iOS / iPadOS
 
-You need macOS, Xcode compatible with the project's Swift dependencies, and XcodeGen. The project configuration source is `project.yml`; dependency versions are locked in the project's `Package.resolved`.
+You need macOS, Xcode compatible with the project's Swift dependencies, and XcodeGen. Open `ios/ModerntermIOS.xcodeproj` in Xcode. The project configuration source is `ios/project.yml`; dependency versions are locked in the project's `Package.resolved`.
 
 ```sh
 brew install xcodegen
+cd ios
 xcodegen generate
 xcodebuild -project ModerntermIOS.xcodeproj -scheme ModerntermIOS \
   -destination 'generic/platform=iOS Simulator' \
@@ -158,11 +159,11 @@ xcodebuild -project ModerntermIOS.xcodeproj -scheme ModerntermIOS \
   CODE_SIGNING_ALLOWED=YES CODE_SIGN_IDENTITY=- build
 ```
 
-Configure your own signing team in Xcode for physical devices. SwiftTerm is pinned to 1.18.0. See [Vendor/README.md](Vendor/README.md) for the scoped Citadel/NIOSSH compatibility patches and their rationale.
+Configure your own signing team in Xcode for physical devices. SwiftTerm is pinned to 1.18.0. See [ios/Vendor/README.md](ios/Vendor/README.md) for the scoped Citadel/NIOSSH compatibility patches and their rationale.
 
 ### Android
 
-You need JDK 17, Android SDK 36, Build Tools 35.0.0, and a working System WebView. Set `ANDROID_HOME` or configure the ignored local file `android/local.properties`.
+From the repository root, you need JDK 17, Android SDK 36, Build Tools 35.0.0, and a working System WebView. Set `ANDROID_HOME` or configure the ignored local file `android/local.properties`.
 
 ```sh
 cd android
@@ -185,15 +186,19 @@ Output is written to `android/app/build/outputs/apk/debug/`. Release builds requ
 ## Repository structure
 
 ```text
-Sources/                 iOS app, SSH/SFTP, and connection transfer
-Resources/               iOS resources, palettes, and third-party notices
-Tests/, UITests/         iOS unit and UI tests
+ios/                     SwiftUI / UIKit app and Xcode project
+  Sources/               SSH/SFTP, monitoring, and connection transfer
+  Resources/             iOS assets, palettes, and third-party notices
+  Tests/, UITests/       iOS unit and UI tests
+  Scripts/               iOS integration tests and resource-generation tools
+  Vendor/                Pinned Swift SSH dependencies and compatibility patches
+  project.yml            XcodeGen configuration
 android/                 Kotlin / Compose app and local build scripts
-shared/                  Encrypted-format vectors, shared icons, and resources
-Vendor/                  Pinned Swift SSH dependencies and compatibility patches
-Scripts/                 iOS integration tests and resource-generation tools
+shared/                  Cross-platform format vectors, icons, and shared resources
 specs/                   Requirements, plans, tasks, and acceptance records
 ```
+
+Older acceptance records may use paths from before the platform split; iOS-specific paths now live under `ios/`. The `shared/` and `specs/` directories remain at the repository root.
 
 ## Contributing and feedback
 
@@ -203,4 +208,4 @@ Reproducible issue reports and focused pull requests are welcome. Include your p
 
 Project-owned code is released under the [MIT License](LICENSE), permitting use, modification, and commercial distribution with the copyright and license notice retained. Third-party dependencies and assets remain subject to their respective licenses.
 
-Thanks to SwiftTerm, Citadel, SwiftNIO/NIOSSH, Swift Crypto, SSHJ, Bouncy Castle, xterm.js, AndroidX/Compose, and the palette projects. See the [iOS third-party notices](Resources/ThirdParty.txt), [Android third-party notices](android/app/src/main/assets/licenses/NOTICE.txt), [terminal license](android/app/src/main/assets/terminal/XTERM-LICENSE), and [icon provenance](shared/branding/README.md).
+Thanks to SwiftTerm, Citadel, SwiftNIO/NIOSSH, Swift Crypto, SSHJ, Bouncy Castle, xterm.js, AndroidX/Compose, and the palette projects. See the [iOS third-party notices](ios/Resources/ThirdParty.txt), [Android third-party notices](android/app/src/main/assets/licenses/NOTICE.txt), [terminal license](android/app/src/main/assets/terminal/XTERM-LICENSE), and [icon provenance](shared/branding/README.md).

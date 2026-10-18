@@ -77,7 +77,7 @@ targets:
     platform: iOS
     sources:
       - path: Tests
-      - path: shared/term-transfer
+      - path: ../shared/term-transfer
         excludes: ["*.py", "*.md"]
         buildPhase: resources
     dependencies:
@@ -87,7 +87,7 @@ targets:
     platform: iOS
     sources:
       - path: UITests
-      - path: shared/term-transfer/attachment.term
+      - path: ../shared/term-transfer/attachment.term
         buildPhase: resources
     dependencies:
       - target: ModerntermIOS

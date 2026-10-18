@@ -8,13 +8,13 @@ xcuserdata/
 *.xcresult
 .env
 
-Tests/Fixture.json
+ios/Tests/Fixture*.json
 
 build-device/
 
 ModernTerm-Mac-Import*.json
-Tests/PasswordFixture.json
-Tests/GatewayProbe.json
+ios/Tests/PasswordFixture*.json
+ios/Tests/GatewayProbe*.json
 
 # Android generated files and private signing material
 android/.gradle/

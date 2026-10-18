@@ -1,5 +1,7 @@
 # ModernTerm for Android
 
+The Android application lives in this directory. The iOS/iPadOS project is in [`../ios/`](../ios/README.md); shared format fixtures and branding remain in [`../shared/`](../shared/).
+
 Kotlin + Jetpack Compose / Material 3. Version **0.2.4 (7)**, `minSdk 29` (Android 10), `compileSdk/targetSdk 36`. The release package is `com.modernterm.android`; debug builds use `.debug` and have separate data.
 
 ## Features

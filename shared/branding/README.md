@@ -6,4 +6,4 @@ Original PNG SHA-256: `11bc4f580d716c9fbfd546ad425cc7e664b28a6438d6006affa4b9b45
 
 Mobile version remains 0.2.3, build/versionCode 6.
 
-Regenerate the iOS RGB icon with `xcrun swift Scripts/build_app_icon.swift shared/branding/Modernterm.png Resources/Assets.xcassets/AppIcon.appiconset/AppIcon.png`, then copy that file to `android/app/src/main/res/drawable/app_icon.png`.
+Regenerate the iOS RGB icon with `xcrun swift ios/Scripts/build_app_icon.swift shared/branding/Modernterm.png ios/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon.png`, then copy that file to `android/app/src/main/res/drawable/app_icon.png`.

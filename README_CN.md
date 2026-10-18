@@ -147,10 +147,11 @@ cd ModernTerm-iOS
 
 ### iOS / iPadOS
 
-需要 macOS、支持项目 Swift 依赖的 Xcode 和 XcodeGen。工程配置源为 `project.yml`，依赖版本锁定在工程的 `Package.resolved` 中。
+需要 macOS、支持项目 Swift 依赖的 Xcode 和 XcodeGen。在 Xcode 中打开 `ios/ModerntermIOS.xcodeproj`。工程配置源为 `ios/project.yml`，依赖版本锁定在工程的 `Package.resolved` 中。
 
 ```sh
 brew install xcodegen
+cd ios
 xcodegen generate
 xcodebuild -project ModerntermIOS.xcodeproj -scheme ModerntermIOS \
   -destination 'generic/platform=iOS Simulator' \
@@ -158,11 +159,11 @@ xcodebuild -project ModerntermIOS.xcodeproj -scheme ModerntermIOS \
   CODE_SIGNING_ALLOWED=YES CODE_SIGN_IDENTITY=- build
 ```
 
-真机构建在 Xcode 中配置自己的签名团队。SwiftTerm 固定为 1.18.0，Citadel/NIOSSH 的局部兼容补丁与原因见 [Vendor/README.md](Vendor/README.md)。
+真机构建在 Xcode 中配置自己的签名团队。SwiftTerm 固定为 1.18.0，Citadel/NIOSSH 的局部兼容补丁与原因见 [ios/Vendor/README.md](ios/Vendor/README.md)。
 
 ### Android
 
-需要 JDK 17、Android SDK 36、Build Tools 35.0.0 和可用的 System WebView。配置 `ANDROID_HOME` 或本机忽略的 `android/local.properties`。
+以下命令从仓库根目录执行。需要 JDK 17、Android SDK 36、Build Tools 35.0.0 和可用的 System WebView。配置 `ANDROID_HOME` 或本机忽略的 `android/local.properties`。
 
 ```sh
 cd android
@@ -185,15 +186,19 @@ cd android
 ## 目录结构
 
 ```text
-Sources/                 iOS 应用与 SSH/SFTP/传输实现
-Resources/               iOS 资源、配色与第三方声明
-Tests/、UITests/           iOS 单元和界面测试
+ios/                     SwiftUI / UIKit 应用与 Xcode 工程
+  Sources/               SSH/SFTP、监控与连接传输实现
+  Resources/             iOS 资源、配色与第三方声明
+  Tests/、UITests/         iOS 单元和界面测试
+  Scripts/               iOS 集成测试和资源生成工具
+  Vendor/                固定的 Swift SSH 依赖与兼容补丁
+  project.yml            XcodeGen 工程配置
 android/                 Kotlin / Compose 应用与本地构建脚本
-shared/                  加密格式向量、共享图标等资源
-Vendor/                  固定的 Swift SSH 依赖与兼容补丁
-Scripts/                 iOS 集成测试和资源生成工具
+shared/                  跨平台格式向量、图标与共享资源
 specs/                   需求、方案、任务与验收记录
 ```
+
+较早的验收记录可能使用拆分前的路径；iOS 专用目录现已移至 `ios/`，`shared/` 和 `specs/` 仍位于仓库根目录。
 
 ## 贡献与反馈
 
@@ -203,4 +208,4 @@ specs/                   需求、方案、任务与验收记录
 
 项目自有代码使用 [MIT License](LICENSE)，允许使用、修改和商业分发，需保留版权与许可声明。第三方依赖及素材继续适用各自许可。
 
-感谢 SwiftTerm、Citadel、SwiftNIO/NIOSSH、Swift Crypto、SSHJ、Bouncy Castle、xterm.js、AndroidX/Compose 及配色项目。详见 [iOS 第三方声明](Resources/ThirdParty.txt)、[Android 第三方声明](android/app/src/main/assets/licenses/NOTICE.txt)、[终端许可](android/app/src/main/assets/terminal/XTERM-LICENSE)和[图标来源](shared/branding/README.md)。
+感谢 SwiftTerm、Citadel、SwiftNIO/NIOSSH、Swift Crypto、SSHJ、Bouncy Castle、xterm.js、AndroidX/Compose 及配色项目。详见 [iOS 第三方声明](ios/Resources/ThirdParty.txt)、[Android 第三方声明](android/app/src/main/assets/licenses/NOTICE.txt)、[终端许可](android/app/src/main/assets/terminal/XTERM-LICENSE)和[图标来源](shared/branding/README.md)。

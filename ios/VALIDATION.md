@@ -1,3 +1,5 @@
+> Historical iOS validation record. Commands using `Scripts/` or `ModerntermIOS.xcodeproj` run from `ios/`; repository-wide specs remain in `../specs/`.
+
 # ModernTerm iOS 0.2.0 monitoring validation
 
 Date: 2026-10-16 (Europe/Copenhagen)
