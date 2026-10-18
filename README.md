@@ -2,7 +2,9 @@
 
 独立的原生 SwiftUI + UIKit SSH 客户端，沿用 Modernterm 的应用图标。AppKit 只适用于 macOS，因此移动端采用 UIKit 的 SwiftTerm 终端视图。当前版本 0.2.3，iOS / iPadOS 17+。
 
-[下载 0.2.3 (6) 安装包与校验文件](https://github.com/liaoweiyang2017/ModernTerm-iOS/releases/tag/v0.2.3-build6) · [本次验收记录](specs/004-term-transfer/validation.md)
+[下载 0.2.3 (6) 安装包与校验文件](https://github.com/liaoweiyang2017/ModernTerm-iOS/releases/tag/v0.2.3-build6-icons) · [本次验收记录](specs/004-term-transfer/validation.md)
+
+2026-10-18：两端统一桌面最新版图标，版本仍为 0.2.3 (6)，并已更新到 iPhone。[图标与部署验收](specs/005-mobile-icon-alignment/validation.md)。
 
 ## 平台入口
 
