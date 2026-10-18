@@ -36,3 +36,12 @@
 ## 发布约定
 
 安装包由本机构建，源码与构建信息随v0.2.4发布；GitHub Actions关闭。新资产上传并逐一校验后删除4个旧0.2.3 Release及附件，保留Git标签。仓库在公开检查后切换为Public，MIT许可覆盖自有代码，第三方许可不变。
+
+## 发布完成核验
+
+- 生产源码提交：`5be98bc`；v0.2.4 Release已发布，IPA/APK/build-info/SHA256SUMS共4项资产状态均为uploaded，GitHub返回的SHA256逐一与本地一致。
+- Android实际包：versionName0.2.4、versionCode7、minSdk29、targetSdk36；签名SHA256仍为`5dcca3a86795783f10d3b44eaaa2f06ddc5ed6e4bfbbd6337df7edbf4e2e1c19`，未包含ssh-fixture或参考测试附件。
+- 最新提交Gitleaks检查无命中；仓库API确认PUBLIC、许可证识别为MIT。
+- 4个旧Release（build6、icons、sharing、open-attachments）及附件已删除；列表仅剩v0.2.4。旧标签未删除。
+- Actions权限API确认enabled=false，无新增工作流运行。隔离SSH服务及安卓测试模拟器已停止。
+- 本次生成发布包，没有将0.2.4安装到用户实体手机；ColorOS17实测仍待用户进行。
